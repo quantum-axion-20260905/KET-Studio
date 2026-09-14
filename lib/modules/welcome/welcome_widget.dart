@@ -15,7 +15,7 @@ class WelcomeWidget extends StatelessWidget {
     return Container(
       color: KetTheme.bgCanvas,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1120),
@@ -23,11 +23,11 @@ class WelcomeWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildOverview(),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 _buildQuickActions(),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 _buildTemplates(),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 _buildFooter(),
               ],
             ),
@@ -39,7 +39,7 @@ class WelcomeWidget extends StatelessWidget {
 
   Widget _buildOverview() {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(16),
       decoration: KetTheme.panelSurface(elevated: true),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +48,7 @@ class WelcomeWidget extends StatelessWidget {
             "KET STUDIO / CONTROL CENTER",
             style: KetTheme.headerStyle.copyWith(color: KetTheme.accent),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -56,12 +56,12 @@ class WelcomeWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
                   'assets/quantum.jpg',
-                  width: 72,
-                  height: 72,
+                  width: 56,
+                  height: 56,
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(width: 18),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,12 +69,12 @@ class WelcomeWidget extends StatelessWidget {
                     Text(
                       "Quantum analysis workspace",
                       style: GoogleFonts.ibmPlexSans(
-                        fontSize: 28,
+                        fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: KetTheme.textMain,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
                       DemoContent.welcomeSubtitle,
                       style: KetTheme.bodyStyle.copyWith(
@@ -87,7 +87,7 @@ class WelcomeWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -118,16 +118,16 @@ class WelcomeWidget extends StatelessWidget {
         Expanded(
           flex: 3,
           child: Container(
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.all(16),
             decoration: KetTheme.panelSurface(elevated: true),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("ACTIONS", style: KetTheme.headerStyle),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Wrap(
-                  spacing: 14,
-                  runSpacing: 14,
+                  spacing: 10,
+                  runSpacing: 10,
                   children: [
                     _ActionCard(
                       icon: FluentIcons.page_add,
@@ -157,31 +157,31 @@ class WelcomeWidget extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 18),
+        const SizedBox(width: 12),
         Expanded(
           flex: 2,
           child: Container(
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.all(16),
             decoration: KetTheme.panelSurface(elevated: true),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("WORKSPACE", style: KetTheme.headerStyle),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 const _InfoRow(
                   icon: FluentIcons.bulleted_list,
                   title: "Project state",
                   description:
                       "Recent items hali yo'q. Birinchi workspace yarating.",
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 const _InfoRow(
                   icon: FluentIcons.processing,
                   title: "Visualization",
                   description:
                       "Run qiling va natijalarni inspector, charts va history panelda ko'ring.",
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 const _InfoRow(
                   icon: FluentIcons.settings,
                   title: "Environment",
@@ -198,7 +198,7 @@ class WelcomeWidget extends StatelessWidget {
 
   Widget _buildTemplates() {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(16),
       decoration: KetTheme.panelSurface(elevated: true),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,10 +209,10 @@ class WelcomeWidget extends StatelessWidget {
             "Start from curated examples instead of an empty editor.",
             style: KetTheme.descriptionStyle,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Wrap(
-            spacing: 14,
-            runSpacing: 14,
+            spacing: 10,
+            runSpacing: 10,
             children: TemplateService.templates.map((tpl) {
               return _TemplateCard(tpl: tpl);
             }).toList(),
@@ -229,10 +229,7 @@ class WelcomeWidget extends StatelessWidget {
         const SizedBox(width: 22),
         Text("Quantum Hardware", style: KetTheme.descriptionStyle),
         const Spacer(),
-        Text(
-          "Alpha v1.0.0",
-          style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
-        ),
+        Text("v1.1.0", style: KetTheme.descriptionStyle.copyWith(fontSize: 11)),
       ],
     );
   }
@@ -247,7 +244,7 @@ class _OverviewChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
         color: KetTheme.bgHeader,
         borderRadius: BorderRadius.circular(8),
@@ -287,13 +284,13 @@ class _ActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 240,
+      width: 220,
       child: HoverButton(
         onPressed: onTap,
         builder: (context, states) {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 120),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: emphasis
                   ? KetTheme.accentSoft
@@ -309,8 +306,8 @@ class _ActionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 34,
-                  height: 34,
+                  width: 30,
+                  height: 30,
                   decoration: BoxDecoration(
                     color: emphasis ? KetTheme.accent : KetTheme.bgCanvas,
                     borderRadius: BorderRadius.circular(8),
@@ -321,7 +318,7 @@ class _ActionCard extends StatelessWidget {
                     color: emphasis ? Colors.white : KetTheme.accent,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 9),
                 Text(
                   title,
                   style: GoogleFonts.ibmPlexSans(
@@ -330,7 +327,7 @@ class _ActionCard extends StatelessWidget {
                     color: KetTheme.textMain,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(subtitle, style: KetTheme.descriptionStyle),
               ],
             ),
@@ -366,7 +363,7 @@ class _InfoRow extends StatelessWidget {
           ),
           child: Icon(icon, size: 15, color: KetTheme.accent),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -397,13 +394,13 @@ class _TemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 260,
+      width: 240,
       child: HoverButton(
         onPressed: () => TemplateService.useTemplate(tpl),
         builder: (context, states) {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 120),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: states.isHovered ? KetTheme.bgHover : KetTheme.bgHeader,
               borderRadius: BorderRadius.circular(8),
@@ -417,15 +414,15 @@ class _TemplateCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: KetTheme.accentSoft,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(tpl.icon, size: 18, color: KetTheme.accent),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 9),
                 Text(
                   tpl.title,
                   style: GoogleFonts.ibmPlexSans(
@@ -434,7 +431,7 @@ class _TemplateCard extends StatelessWidget {
                     color: KetTheme.textMain,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   tpl.description,
                   style: KetTheme.descriptionStyle,

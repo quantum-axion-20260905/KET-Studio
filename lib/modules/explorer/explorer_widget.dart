@@ -51,8 +51,8 @@ class _ExplorerWidgetState extends State<ExplorerWidget> {
       children: [
         // Header with Actions
         Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          height: KetTheme.panelHeaderHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: KetTheme.bgHeader,
             border: Border(
@@ -100,12 +100,12 @@ class _ExplorerWidgetState extends State<ExplorerWidget> {
 
         // Search Bar
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(6),
           child: TextBox(
             controller: _searchController,
             placeholder: "Filter files...",
             prefix: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              padding: EdgeInsets.symmetric(horizontal: 6),
               child: Icon(FluentIcons.search, size: 12),
             ),
             suffix: _searchQuery.isNotEmpty
@@ -127,7 +127,7 @@ class _ExplorerWidgetState extends State<ExplorerWidget> {
           child: Container(
             color: KetTheme.bgSidebar,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.only(bottom: 8),
               child: Column(
                 children: [
                   if (_isCreatingFile || _isCreatingFolder)
@@ -145,7 +145,7 @@ class _ExplorerWidgetState extends State<ExplorerWidget> {
                     ),
                   if (kIsWeb)
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(12),
                       child: Text(
                         'Local file access is available in the desktop app.\nUse the templates or create a virtual file to explore KET Studio.',
                         style: KetTheme.descriptionStyle,
@@ -330,8 +330,8 @@ class _FileTreeItemState extends State<FileTreeItem> {
               onPressed: _onTap,
               builder: (context, states) {
                 return Container(
-                  padding: EdgeInsets.only(left: 14.0 * widget.level, right: 8),
-                  height: 28,
+                  padding: EdgeInsets.only(left: 12.0 * widget.level, right: 6),
+                  height: 26,
                   decoration: BoxDecoration(
                     color: isActive
                         ? KetTheme.accentSoft
@@ -358,7 +358,7 @@ class _FileTreeItemState extends State<FileTreeItem> {
                         isDirectory: isDirectory,
                         isExpanded: _isExpanded,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           name,

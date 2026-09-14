@@ -29,6 +29,8 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   final LayoutService _layout = LayoutService();
+  double _leftPanelWidth = 258;
+  double _rightPanelWidth = 320;
 
   void _handleLayoutChanged() {
     if (mounted) setState(() {});
@@ -65,12 +67,15 @@ class _MainLayoutState extends State<MainLayout> {
         children: [
           TopBar(layout: _layout),
           Expanded(
-            child: Row(
-              children: [
-                ActivityBar(isLeft: true, layout: _layout),
-                Expanded(child: _buildMainContent()),
-                ActivityBar(isLeft: false, layout: _layout),
-              ],
+            child: Padding(
+              padding: KetTheme.shellPadding,
+              child: Row(
+                children: [
+                  ActivityBar(isLeft: true, layout: _layout),
+                  Expanded(child: _buildMainContent()),
+                  ActivityBar(isLeft: false, layout: _layout),
+                ],
+              ),
             ),
           ),
           StatusBar(layout: _layout),
@@ -87,25 +92,48 @@ class _MainLayoutState extends State<MainLayout> {
         ? PluginRegistry().getPanel(_layout.activeRightPanelId!)
         : null;
 
-    // Horizontal structure: [Left Panel] [Divider] [Editor] [Divider] [Right Panel]
-    Widget horizontalView = Row(
-      children: [
-        if (activeLeft != null)
-          _buildSidePanel(
-            panel: activeLeft,
-            width: 272,
-            padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
-          ),
-        const Expanded(
-          child: Padding(padding: EdgeInsets.all(10), child: EditorWidget()),
-        ),
-        if (activeRight != null)
-          _buildSidePanel(
-            panel: activeRight,
-            width: 320,
-            padding: const EdgeInsets.fromLTRB(0, 10, 10, 10),
-          ),
-      ],
+    // Horizontal structure: [Left Panel] [Editor] [Right Panel].
+    // The widths are stable desktop defaults, then remain user-resizable while
+    // clamped to practical bounds so the editor keeps a useful work area.
+    Widget horizontalView = LayoutBuilder(
+      builder: (context, constraints) {
+        final leftWidth = _leftPanelWidth.clamp(220.0, 360.0).toDouble();
+        final rightWidth = _rightPanelWidth.clamp(260.0, 420.0).toDouble();
+
+        return Row(
+          children: [
+            if (activeLeft != null)
+              _buildSidePanel(
+                panel: activeLeft,
+                width: leftWidth,
+                padding: const EdgeInsets.only(right: KetTheme.panelGap),
+              ),
+            if (activeLeft != null)
+              _ResizeHandle(
+                onDrag: (delta) => setState(() {
+                  _leftPanelWidth = (_leftPanelWidth + delta)
+                      .clamp(220.0, 360.0)
+                      .toDouble();
+                }),
+              ),
+            const Expanded(child: EditorWidget()),
+            if (activeRight != null)
+              _ResizeHandle(
+                onDrag: (delta) => setState(() {
+                  _rightPanelWidth = (_rightPanelWidth - delta)
+                      .clamp(260.0, 420.0)
+                      .toDouble();
+                }),
+              ),
+            if (activeRight != null)
+              _buildSidePanel(
+                panel: activeRight,
+                width: rightWidth,
+                padding: const EdgeInsets.only(left: KetTheme.panelGap),
+              ),
+          ],
+        );
+      },
     );
 
     if (!_layout.isBottomPanelVisible) return horizontalView;
@@ -115,8 +143,11 @@ class _MainLayoutState extends State<MainLayout> {
       children: [
         Expanded(child: horizontalView),
         Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-          child: SizedBox(height: 220, child: TerminalWidget(layout: _layout)),
+          padding: const EdgeInsets.only(top: KetTheme.panelGap),
+          child: SizedBox(
+            height: KetTheme.terminalHeight,
+            child: TerminalWidget(layout: _layout),
+          ),
         ),
       ],
     );
@@ -134,6 +165,29 @@ class _MainLayoutState extends State<MainLayout> {
         child: KeyedSubtree(
           key: ValueKey(panel.id),
           child: PanelHeader(panel: panel, child: panel.buildContent(context)),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResizeHandle extends StatelessWidget {
+  final ValueChanged<double> onDrag;
+
+  const _ResizeHandle({required this.onDrag});
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.resizeLeftRight,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragUpdate: (details) => onDrag(details.delta.dx),
+        child: SizedBox(
+          width: 6,
+          child: Center(
+            child: Container(width: 1, height: 28, color: KetTheme.border),
+          ),
         ),
       ),
     );

@@ -171,9 +171,9 @@ class _TerminalWidgetState extends State<TerminalWidget> {
       child: Column(
         children: [
           SizedBox(
-            height: 34,
+            height: KetTheme.terminalHeaderHeight,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Row(
                 children: [
                   Icon(
@@ -181,12 +181,12 @@ class _TerminalWidgetState extends State<TerminalWidget> {
                     size: 13,
                     color: KetTheme.accent,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
                     _connecting ? 'Starting terminal…' : 'TERMINAL',
                     style: KetTheme.bodyStyle.copyWith(fontSize: 12),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
                     'PTY shell',
                     style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
@@ -240,7 +240,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
           Divider(size: 1),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+              padding: const EdgeInsets.fromLTRB(6, 2, 6, 6),
               child: TerminalView(
                 _terminal,
                 autofocus: !kIsWeb,

@@ -14,7 +14,7 @@ class MetricsSidebarWidget extends StatelessWidget {
         final service = VizService();
         final currentSession = service.currentSession;
         final status = service.status;
-        
+
         // 1. Check if we are currently running but have no metrics yet
         bool isRunning = status == VizStatus.running;
 
@@ -35,9 +35,15 @@ class MetricsSidebarWidget extends StatelessWidget {
                 if (isRunning) ...[
                   const ProgressRing(),
                   const SizedBox(height: 16),
-                  Text("Executing script...", style: TextStyle(color: KetTheme.textMuted)),
+                  Text(
+                    "Executing script...",
+                    style: TextStyle(color: KetTheme.textMuted),
+                  ),
                   const SizedBox(height: 4),
-                  const Text("Waiting for metrics data...", style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  const Text(
+                    "Waiting for metrics data...",
+                    style: TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
                 ] else ...[
                   Icon(
                     FluentIcons.analytics_report,
@@ -45,9 +51,15 @@ class MetricsSidebarWidget extends StatelessWidget {
                     color: Colors.grey.withValues(alpha: 0.1),
                   ),
                   const SizedBox(height: 16),
-                  Text("No metrics available", style: TextStyle(color: KetTheme.textMuted)),
+                  Text(
+                    "No metrics available",
+                    style: TextStyle(color: KetTheme.textMuted),
+                  ),
                   const SizedBox(height: 8),
-                  const Text("Run a script to see analytics here", style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  const Text(
+                    "Run a script to see analytics here",
+                    style: TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
                 ],
               ],
             ),
@@ -55,15 +67,21 @@ class MetricsSidebarWidget extends StatelessWidget {
         }
 
         final data = metricsEvent.payload;
-        if (data is! Map) return const Center(child: Text("Invalid data format"));
+        if (data is! Map) {
+          return const Center(child: Text("Invalid data format"));
+        }
         final Map<String, dynamic> map = Map<String, dynamic>.from(data);
 
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(10),
           children: [
             Row(
               children: [
-                Icon(FluentIcons.analytics_report, size: 14, color: KetTheme.accent),
+                Icon(
+                  FluentIcons.analytics_report,
+                  size: 14,
+                  color: KetTheme.accent,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   "EXECUTION REPORT",
@@ -94,10 +112,10 @@ class MetricsSidebarWidget extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             ...map.entries.map((e) => _buildDynamicMetric(e.key, e.value)),
-            
-            const SizedBox(height: 32),
+
+            const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -108,10 +126,26 @@ class MetricsSidebarWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("SESSION INFO", style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const Text(
+                    "SESSION INFO",
+                    style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text("ID: ${currentSession?.id}", style: const TextStyle(fontSize: 9, fontFamily: 'monospace')),
-                  Text("Completed: ${metricsEvent.timeStr}", style: const TextStyle(fontSize: 9)),
+                  Text(
+                    "ID: ${currentSession?.id}",
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                  Text(
+                    "Completed: ${metricsEvent.timeStr}",
+                    style: const TextStyle(fontSize: 9),
+                  ),
                 ],
               ),
             ),
@@ -123,9 +157,9 @@ class MetricsSidebarWidget extends StatelessWidget {
 
   Widget _buildDynamicMetric(String key, dynamic value) {
     String displayValue = value.toString();
-    
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
+      padding: const EdgeInsets.only(bottom: 14.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -140,14 +174,14 @@ class MetricsSidebarWidget extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             displayValue,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: Colors.white,
+              color: KetTheme.textMain,
             ),
           ),
-          const SizedBox(height: 10),
-          Container(height: 1, color: Colors.white.withValues(alpha: 0.08)),
+          const SizedBox(height: 6),
+          Container(height: 1, color: KetTheme.border),
         ],
       ),
     );

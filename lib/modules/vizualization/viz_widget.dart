@@ -120,7 +120,7 @@ class _VizualizationWidgetState extends State<VizualizationWidget> {
   Widget _buildMainContent(VizService service, VizStatus status) {
     if (service.selectedEvent != null) {
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Expanded(
@@ -204,9 +204,9 @@ class _VizualizationWidgetState extends State<VizualizationWidget> {
         Expanded(
           child: ListView.separated(
             controller: _scrollController,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             itemCount: displayList.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, index) =>
                 _VizCard(event: displayList[index]),
           ),
@@ -230,7 +230,7 @@ class _VizualizationWidgetState extends State<VizualizationWidget> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const ProgressRing(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Text(
             message ??
                 (_showNoOutputHint
@@ -1038,7 +1038,7 @@ class _VizCardState extends State<_VizCard> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: const BorderRadius.vertical(
@@ -1083,7 +1083,7 @@ class _VizCardState extends State<_VizCard> {
               builder: (context) {
                 try {
                   return Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: _buildVizContent(event, isSingle: isSingle),
                   );
                 } catch (e) {

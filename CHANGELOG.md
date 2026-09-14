@@ -4,7 +4,11 @@ All notable changes to KET Studio are documented here.
 
 ## Unreleased
 
-Keyingi release uchun rejalashtirilgan o'zgarishlar shu bo'limga qo'shiladi.
+- Refined the desktop shell with a denser spacing rhythm, compact bars and
+  panel headers, tighter editor tabs, and a more focused welcome surface.
+- Added draggable left and right panel splitters with bounded desktop widths.
+- Improved status, metrics, history, explorer, terminal and visualization
+  panel density for resizable Windows windows.
 
 ## 1.1.0 - 2026-09-14
 

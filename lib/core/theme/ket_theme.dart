@@ -3,6 +3,20 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../services/settings_service.dart';
 
 class KetTheme {
+  // Desktop rhythm: a restrained 4/6/8 spacing scale keeps the shell dense
+  // without making controls feel cramped on a resizable Windows window.
+  static const double topBarHeight = 44;
+  static const double statusBarHeight = 28;
+  static const double panelHeaderHeight = 32;
+  static const double terminalHeaderHeight = 30;
+  static const double activityRailWidth = 40;
+  static const double shellInset = 6;
+  static const double panelGap = 6;
+  static const double terminalHeight = 200;
+
+  static const EdgeInsets shellPadding = EdgeInsets.all(shellInset);
+  static const EdgeInsets compactPanelPadding = EdgeInsets.all(8);
+
   static bool get isDark => SettingsService().themeMode == ThemeMode.dark;
   static bool get isWindowsDesktop =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;

@@ -29,17 +29,17 @@ class TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 54,
+      height: KetTheme.topBarHeight,
       decoration: BoxDecoration(
         color: KetTheme.bgSidebar,
         border: Border(bottom: BorderSide(color: KetTheme.border)),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           children: [
             const _BrandChip(),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: ListenableBuilder(
                 listenable: Listenable.merge([
@@ -58,8 +58,8 @@ class TopBar extends StatelessWidget {
                         style: ButtonStyle(
                           padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
+                              horizontal: 8,
+                              vertical: 6,
                             ),
                           ),
                           shape: WidgetStateProperty.all(
@@ -122,18 +122,23 @@ class TopBar extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: MoveWindow(
-                child: Container(
+                child: Align(
                   alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Text(
-                    layout.activeWorkspacePreset.description,
-                    style: KetTheme.descriptionStyle,
-                    overflow: TextOverflow.ellipsis,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 190),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Text(
+                        layout.activeWorkspacePreset.description,
+                        style: KetTheme.descriptionStyle,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             ValueListenableBuilder<bool>(
               valueListenable: ExecutionService().isRunning,
               builder: (context, running, _) {
@@ -148,7 +153,7 @@ class TopBar extends StatelessWidget {
                         iconColor: KetTheme.danger,
                         onPressed: () => ExecutionService().stop(),
                       ),
-                    if (running) const SizedBox(width: 6),
+                    if (running) const SizedBox(width: 4),
                     _ActionPill(
                       icon: running
                           ? FluentIcons.progress_ring_dots
@@ -163,13 +168,13 @@ class TopBar extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             _CircleIconButton(
               icon: FluentIcons.settings,
               tooltip: "Settings (Ctrl+,)",
               onPressed: () => CommandService().execute("settings.open"),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             if (!kIsWeb) const WindowButtons(),
           ],
         ),
@@ -228,7 +233,7 @@ class _ActionPill extends StatelessWidget {
       onPressed: onPressed,
       style: ButtonStyle(
         padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         ),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
@@ -243,7 +248,7 @@ class _ActionPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: iconColor ?? KetTheme.textMain),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             label.toUpperCase(),
             style: KetTheme.statusStyle.copyWith(
@@ -280,7 +285,7 @@ class WindowButtons extends StatelessWidget {
           tooltip: "Minimize",
           onPressed: () => windowManager.minimize(),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 4),
         _CircleIconButton(
           icon: FluentIcons.chrome_full_screen,
           tooltip: "Maximize",
@@ -328,8 +333,8 @@ class _CircleIconButton extends StatelessWidget {
               ? (hoverColor ?? KetTheme.bgHover)
               : KetTheme.bgHeader;
           return Container(
-            width: 30,
-            height: 28,
+            width: 28,
+            height: 26,
             decoration: BoxDecoration(
               color: fill,
               borderRadius: BorderRadius.circular(4),
@@ -376,25 +381,20 @@ class ActivityBar extends StatelessWidget {
         if (panels.isEmpty) return const SizedBox.shrink();
 
         return Padding(
-          padding: EdgeInsets.fromLTRB(
-            isLeft ? 10 : 0,
-            10,
-            isLeft ? 0 : 10,
-            10,
-          ),
+          padding: EdgeInsets.fromLTRB(isLeft ? 4 : 0, 4, isLeft ? 0 : 4, 4),
           child: Container(
-            width: 44,
+            width: KetTheme.activityRailWidth,
             decoration: KetTheme.panelSurface(radius: KetTheme.radiusMd),
             child: Column(
               children: [
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 ...panels.map((panel) {
                   final isActive = isLeft
                       ? layout.activeLeftPanelId == panel.id
                       : layout.activeRightPanelId == panel.id;
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 1),
                     child: HoverButton(
                       onPressed: () {
                         if (isLeft) {
@@ -405,8 +405,8 @@ class ActivityBar extends StatelessWidget {
                       },
                       builder: (context, states) {
                         return Container(
-                          width: 34,
-                          height: 34,
+                          width: 30,
+                          height: 30,
                           decoration: BoxDecoration(
                             color: isActive
                                 ? KetTheme.accentSoft
@@ -449,7 +449,7 @@ class ActivityBar extends StatelessWidget {
                 }),
                 const Spacer(),
                 Container(
-                  margin: const EdgeInsets.only(bottom: 6),
+                  margin: const EdgeInsets.only(bottom: 4),
                   width: 20,
                   height: 1,
                   color: KetTheme.borderStrong,
@@ -484,13 +484,13 @@ class StatusBar extends StatelessWidget {
         final activeFile = editor.activeFile;
 
         return Container(
-          height: 38,
+          height: KetTheme.statusBarHeight,
           decoration: BoxDecoration(
             color: KetTheme.bgSidebar,
             border: Border(top: BorderSide(color: KetTheme.border)),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               children: [
                 _StatusInfo(
@@ -548,9 +548,9 @@ class StatusBar extends StatelessWidget {
                     );
                   },
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Text(
-                  "Alpha v1.0.0",
+                  "v1.1.0",
                   style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
                 ),
               ],
@@ -579,7 +579,7 @@ class _StatusChip extends StatelessWidget {
       onPressed: onTap,
       builder: (context, states) {
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: states.isHovered ? KetTheme.bgHover : KetTheme.accentSoft,
             borderRadius: BorderRadius.circular(4),
@@ -589,7 +589,7 @@ class _StatusChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, size: 12, color: KetTheme.accent),
-              const SizedBox(width: 7),
+              const SizedBox(width: 6),
               Text(
                 label.toUpperCase(),
                 style: KetTheme.headerStyle.copyWith(color: KetTheme.textMain),
@@ -616,7 +616,7 @@ class _StatusInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: highlight ? KetTheme.accentSoft : KetTheme.bgHeader,
         borderRadius: BorderRadius.circular(4),
@@ -666,8 +666,8 @@ class PanelHeader extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                height: KetTheme.panelHeaderHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
                   color: KetTheme.bgHeader,
                   border: Border(bottom: BorderSide(color: KetTheme.border)),
@@ -675,7 +675,7 @@ class PanelHeader extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(panel.icon, size: 14, color: KetTheme.accent),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         panel.title,

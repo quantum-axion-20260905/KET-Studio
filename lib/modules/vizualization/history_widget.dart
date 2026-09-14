@@ -23,6 +23,7 @@ class VizHistoryWidget extends StatelessWidget {
         }
 
         return ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 4),
           itemCount: sessions.length,
           itemBuilder: (context, sIndex) {
             final session = sessions[sIndex];
@@ -46,7 +47,7 @@ class VizHistoryWidget extends StatelessWidget {
               ),
               content: useScrollableList
                   ? SizedBox(
-                      height: 300,
+                      height: 240,
                       child: ListView.builder(
                         padding: const EdgeInsets.only(right: 12),
                         itemCount: session.events.length,
@@ -72,7 +73,9 @@ class VizHistoryWidget extends StatelessWidget {
     return ListTile(
       onPressed: () => service.selectEvent(e),
       tileColor: isSelected
-          ? WidgetStateColor.resolveWith((states) => KetTheme.accent.withValues(alpha: 0.1))
+          ? WidgetStateColor.resolveWith(
+              (states) => KetTheme.accent.withValues(alpha: 0.1),
+            )
           : null,
       leading: Icon(
         _getIconForType(e.type),

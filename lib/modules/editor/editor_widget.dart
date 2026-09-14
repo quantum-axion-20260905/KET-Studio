@@ -91,8 +91,8 @@ class _EditorWidgetState extends State<EditorWidget> {
         child: Column(
           children: [
             Container(
-              height: 38,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: KetTheme.bgHeader,
                 border: Border(bottom: BorderSide(color: KetTheme.border)),
@@ -110,7 +110,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                       onPressed: () => _editorService.setActiveIndex(index),
                       builder: (context, states) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             color: isActive
                                 ? KetTheme.bgSelected
@@ -136,7 +136,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                                     ? KetTheme.accent
                                     : KetTheme.textMuted,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Text(
                                 file.name,
                                 style: KetTheme.bodyStyle.copyWith(
