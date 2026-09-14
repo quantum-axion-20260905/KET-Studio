@@ -1,12 +1,12 @@
 {
-    "name": "ket_studio",
-    "short_name": "ket_studio",
+    "name": "KET Studio",
+    "short_name": "KET Studio",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#101317",
+    "theme_color": "#39C6AA",
+    "description": "An open-source quantum programming and visualization workspace.",
+    "orientation": "landscape",
     "prefer_related_applications": false,
     "icons": [
         {

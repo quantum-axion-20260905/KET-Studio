@@ -108,12 +108,16 @@ class _TutorialCard extends StatelessWidget {
         final isHovered = states.isHovered;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          transform: isHovered ? (Matrix4.identity()..scale(1.02, 1.02)) : Matrix4.identity(),
+          transform: isHovered
+              ? (Matrix4.identity()..scaleByDouble(1.02, 1.02, 1.0, 1.0))
+              : Matrix4.identity(),
           decoration: BoxDecoration(
             color: isHovered ? KetTheme.bgHover : KetTheme.bgSidebar,
             borderRadius: KetTheme.radiusLg,
             border: Border.all(
-              color: isHovered ? KetTheme.accent.withValues(alpha: 0.5) : KetTheme.border,
+              color: isHovered
+                  ? KetTheme.accent.withValues(alpha: 0.5)
+                  : KetTheme.border,
               width: isHovered ? 1.5 : 1,
             ),
             boxShadow: isHovered ? KetTheme.softShadow : null,
@@ -127,7 +131,10 @@ class _TutorialCard extends StatelessWidget {
                 children: [
                   Icon(tutorial.icon, color: KetTheme.accent, size: 28),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: diffColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(4),
@@ -163,7 +170,11 @@ class _TutorialCard extends StatelessWidget {
                     style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
                   ),
                   const Spacer(),
-                  Icon(FluentIcons.chevron_right_med, size: 12, color: KetTheme.textMuted),
+                  Icon(
+                    FluentIcons.chevron_right_med,
+                    size: 12,
+                    color: KetTheme.textMuted,
+                  ),
                 ],
               ),
             ],
@@ -205,14 +216,13 @@ class _TutorialDetailView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: KetTheme.bgHeader,
-            border: Border(bottom: BorderSide(color: KetTheme.border, width: 0.5)),
+            border: Border(
+              bottom: BorderSide(color: KetTheme.border, width: 0.5),
+            ),
           ),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: onBack,
-              ),
+              IconButton(icon: const Icon(FluentIcons.back), onPressed: onBack),
               const SizedBox(width: 12),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -220,11 +230,16 @@ class _TutorialDetailView extends StatelessWidget {
                 children: [
                   Text(
                     tutorial.title,
-                    style: KetTheme.bodyStyle.copyWith(fontWeight: FontWeight.bold),
+                    style: KetTheme.bodyStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     "${tutorial.difficulty.name.toUpperCase()} • ${tutorial.duration}",
-                    style: KetTheme.descriptionStyle.copyWith(fontSize: 10, letterSpacing: 0.5),
+                    style: KetTheme.descriptionStyle.copyWith(
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
               ),
@@ -293,7 +308,8 @@ class _SectionWidget extends StatelessWidget {
           const SizedBox(height: 20),
           _CodeBlock(
             code: section.codeSnippet!,
-            filename: "lab_${section.title.toLowerCase().replaceAll(' ', '_')}.py",
+            filename:
+                "lab_${section.title.toLowerCase().replaceAll(' ', '_')}.py",
           ),
         ],
         const SizedBox(height: 40),
@@ -367,7 +383,9 @@ class _CodeBlock extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: KetTheme.bgHeader,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
               border: Border(bottom: BorderSide(color: KetTheme.border)),
             ),
             child: Row(
@@ -386,7 +404,9 @@ class _CodeBlock extends StatelessWidget {
                     builder: (context, states) => Icon(
                       FluentIcons.open_file,
                       size: 14,
-                      color: states.isHovered ? KetTheme.accent : KetTheme.textMuted,
+                      color: states.isHovered
+                          ? KetTheme.accent
+                          : KetTheme.textMuted,
                     ),
                   ),
                 ),

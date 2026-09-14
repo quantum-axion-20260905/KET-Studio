@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../core/services/command_service.dart';
 import '../core/services/editor_service.dart';
@@ -144,7 +145,9 @@ void setupCommands(BuildContext context) {
       id: "file.exit",
       title: "Exit",
       icon: FluentIcons.power_button,
-      action: () => exit(0),
+      action: () {
+        if (!kIsWeb) exit(0);
+      },
     ),
   );
 

@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import '../../core/constants/viz_limits.dart';
 import '../../core/services/viz_service.dart';
 import '../../core/theme/ket_theme.dart';
 import 'dart:math' as math;
@@ -136,9 +137,22 @@ class _VizualizationWidgetState extends State<VizualizationWidget> {
     }
 
     final currentSession = service.currentSession;
-    if (currentSession == null || currentSession.events.isEmpty) {
+    if (currentSession == null) {
       if (status == VizStatus.running) return _buildRunningState();
       return _buildIdleState();
+    }
+
+    if (currentSession.events.isEmpty) {
+      final emptyState = status == VizStatus.running
+          ? _buildRunningState()
+          : _buildIdleState();
+      if (currentSession.warnings.isEmpty) return emptyState;
+      return Column(
+        children: [
+          _WarningsPanel(warnings: currentSession.warnings),
+          Expanded(child: emptyState),
+        ],
+      );
     }
 
     final events = currentSession.events;
@@ -163,23 +177,41 @@ class _VizualizationWidgetState extends State<VizualizationWidget> {
     displayList.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     if (displayList.isEmpty) {
+      Widget emptyState;
       if (status == VizStatus.running) {
         final hasMetrics = events.any((e) => e.type == VizType.metrics);
-        return _buildRunningState(
+        emptyState = _buildRunningState(
           message: hasMetrics ? "Syncing simulation metrics..." : null,
         );
+      } else {
+        emptyState = _buildIdleState(
+          message: "No live visualizations in current session.",
+        );
       }
-      return _buildIdleState(
-        message: "No live visualizations in current session.",
+      return Column(
+        children: [
+          if (currentSession.warnings.isNotEmpty)
+            _WarningsPanel(warnings: currentSession.warnings),
+          Expanded(child: emptyState),
+        ],
       );
     }
 
-    return ListView.separated(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(12),
-      itemCount: displayList.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) => _VizCard(event: displayList[index]),
+    return Column(
+      children: [
+        if (currentSession.warnings.isNotEmpty)
+          _WarningsPanel(warnings: currentSession.warnings),
+        Expanded(
+          child: ListView.separated(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(12),
+            itemCount: displayList.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) =>
+                _VizCard(event: displayList[index]),
+          ),
+        ),
+      ],
     );
   }
 
@@ -205,6 +237,58 @@ class _VizualizationWidgetState extends State<VizualizationWidget> {
                     ? "Running... (no visual output yet)"
                     : "Capturing quantum data..."),
             style: TextStyle(color: KetTheme.textMuted, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WarningsPanel extends StatelessWidget {
+  final List<String> warnings;
+
+  const _WarningsPanel({required this.warnings});
+
+  @override
+  Widget build(BuildContext context) {
+    final visibleWarnings = warnings.reversed.take(3).toList();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2B2100),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: KetTheme.warning.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(FluentIcons.warning, size: 14, color: KetTheme.warning),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Visualization limits',
+                  style: TextStyle(
+                    color: KetTheme.warning,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                ...visibleWarnings.map(
+                  (warning) => Text(
+                    warning,
+                    style: TextStyle(
+                      color: KetTheme.textSecondary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -253,10 +337,41 @@ class _MatrixHeatmap extends StatelessWidget {
     if (data is List) {
       final list = data as List;
       rows = list.length;
-      cols = rows > 0 ? (list[0] as List).length : 0;
-      matrixData = list
-          .map((r) => (r as List).map((v) => (v as num).toDouble()).toList())
-          .toList();
+      if (rows > VizLimits.maxMatrixRows) {
+        return _LimitNotice(
+          message:
+              'Matrix has $rows rows; the safe display limit is '
+              '${VizLimits.maxMatrixRows}.',
+        );
+      }
+      if (rows > 0 && list.first is List) {
+        cols = (list.first as List).length;
+      }
+      if (cols > VizLimits.maxMatrixColumns ||
+          rows * cols > VizLimits.maxMatrixCells) {
+        return _LimitNotice(
+          message:
+              'Matrix is $rows×$cols; display is limited to '
+              '${VizLimits.maxMatrixRows}×${VizLimits.maxMatrixColumns}.',
+        );
+      }
+      for (final row in list) {
+        if (row is! List || row.length != cols) {
+          return const _LimitNotice(
+            message: 'Matrix rows must be equally sized numeric lists.',
+          );
+        }
+        final converted = <double>[];
+        for (final value in row) {
+          if (value is! num) {
+            return const _LimitNotice(
+              message: 'Matrix values must be numbers.',
+            );
+          }
+          converted.add(value.toDouble());
+        }
+        matrixData.add(converted);
+      }
     } else if (data is Map) {
       final map = data as Map;
       int maxIdx = -1;
@@ -269,12 +384,19 @@ class _MatrixHeatmap extends StatelessWidget {
           maxIdx = math.max(maxIdx, math.max(r, c));
         }
       }
+      if (maxIdx + 1 > VizLimits.maxMatrixRows) {
+        return _LimitNotice(
+          message:
+              'Sparse matrix is larger than the safe display limit of '
+              '${VizLimits.maxMatrixRows}×${VizLimits.maxMatrixColumns}.',
+        );
+      }
       rows = cols = maxIdx + 1;
-      // Convert map sparse data to dense for painter (or handle sparse in painter, but dense is easier for now)
       matrixData = List.generate(
         rows,
         (r) => List.generate(cols, (c) {
-          return (map['$r,$c'] ?? 0.0).toDouble();
+          final value = map['$r,$c'];
+          return value is num ? value.toDouble() : 0.0;
         }),
       );
     }
@@ -399,11 +521,23 @@ class _TableDisplay extends StatelessWidget {
     final title = data?['title'] ?? "Table";
     final rowsList = data?['rows'] as List? ?? [];
 
-    // Guard: Prevent massive table builds
-    if (rowsList.length > 100) {
-      return Text(
-        "Table too large to display (${rowsList.length} rows)",
-        style: TextStyle(fontSize: 10, color: Colors.orange),
+    if (rowsList.length > VizLimits.maxTableRows) {
+      return _LimitNotice(
+        message:
+            'Table has ${rowsList.length} rows; the safe display limit is '
+            '${VizLimits.maxTableRows}.',
+      );
+    }
+
+    final maxColumns = rowsList.fold<int>(
+      0,
+      (maximum, row) => row is List ? math.max(maximum, row.length) : maximum,
+    );
+    if (maxColumns > VizLimits.maxTableColumns) {
+      return _LimitNotice(
+        message:
+            'Table has $maxColumns columns; the safe display limit is '
+            '${VizLimits.maxTableColumns}.',
       );
     }
 
@@ -452,21 +586,35 @@ class _BlochSpherePainter extends StatelessWidget {
       final count = list.length;
 
       double size = count <= 4 ? 120 : (count <= 16 ? 80 : 50);
-      int limit = count > 100 ? 100 : count;
+      final limit = math.min(count, VizLimits.maxBlochStates);
 
       return Center(
-        child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: WrapAlignment.center,
-          children: list.take(limit).toList().asMap().entries.map((e) {
-            double theta = 0, phi = 0;
-            if (e.value is Map) {
-              theta = (e.value['theta'] ?? 0.0).toDouble();
-              phi = (e.value['phi'] ?? 0.0).toDouble();
-            }
-            return InteractiveBlochSphere(theta: theta, phi: phi, size: size);
-          }).toList(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (count > limit)
+              _LimitNotice(
+                message:
+                    'Showing $limit of $count Bloch states to keep the UI responsive.',
+              ),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.center,
+              children: list.take(limit).toList().asMap().entries.map((e) {
+                double theta = 0, phi = 0;
+                if (e.value is Map) {
+                  theta = (e.value['theta'] ?? 0.0).toDouble();
+                  phi = (e.value['phi'] ?? 0.0).toDouble();
+                }
+                return InteractiveBlochSphere(
+                  theta: theta,
+                  phi: phi,
+                  size: size,
+                );
+              }).toList(),
+            ),
+          ],
         ),
       );
     }
@@ -521,61 +669,99 @@ class _HistogramChart extends StatelessWidget {
         style: TextStyle(color: Colors.grey, fontSize: 10),
       );
     }
-    final keys = map.keys.toList();
-    final values = map.values.map((v) => (v as num).toDouble()).toList();
+    final entries = <MapEntry<Object?, double>>[];
+    for (final entry in map.entries) {
+      if (entry.value is! num) {
+        return const _LimitNotice(message: 'Histogram values must be numbers.');
+      }
+      final value = (entry.value as num).toDouble();
+      if (value < 0) {
+        return const _LimitNotice(
+          message: 'Histogram values cannot be negative.',
+        );
+      }
+      entries.add(MapEntry(entry.key, value));
+    }
+
+    var visibleEntries = entries;
+    if (entries.length > VizLimits.maxHistogramBuckets) {
+      final sorted = entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      final kept = sorted.take(VizLimits.maxHistogramBuckets - 1).toList();
+      final other = sorted
+          .skip(VizLimits.maxHistogramBuckets - 1)
+          .fold<double>(0, (sum, entry) => sum + entry.value);
+      visibleEntries = [...kept, MapEntry('other', other)];
+    }
+
+    final keys = visibleEntries.map((entry) => entry.key).toList();
+    final values = visibleEntries.map((entry) => entry.value).toList();
     final double maxVal = values.isEmpty ? 1.0 : values.reduce(math.max);
     final double safeMax = maxVal == 0 ? 1.0 : maxVal;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double barWidth =
-            (constraints.maxWidth / math.max(keys.length, 1)) - 8;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: List.generate(keys.length, (i) {
-            final double hRatio = values[i] / safeMax;
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  width: math.max(barWidth, 4.0),
-                  height: hRatio * (constraints.maxHeight - 20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        KetTheme.accent,
-                        KetTheme.accent.withValues(alpha: 0.5),
-                      ],
-                    ),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(4),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: KetTheme.accent.withValues(alpha: 0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, -2),
+    return Column(
+      children: [
+        if (entries.length > visibleEntries.length)
+          _LimitNotice(
+            message:
+                'Showing the ${visibleEntries.length - 1} largest buckets '
+                'plus “other” (${entries.length} total).',
+          ),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double barWidth =
+                  (constraints.maxWidth / math.max(keys.length, 1)) - 8;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(keys.length, (i) {
+                  final double hRatio = (values[i] / safeMax).clamp(0.0, 1.0);
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: math.max(barWidth, 4.0),
+                        height:
+                            hRatio * math.max(constraints.maxHeight - 20, 0),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              KetTheme.accent,
+                              KetTheme.accent.withValues(alpha: 0.5),
+                            ],
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: KetTheme.accent.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, -2),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        keys[i].toString(),
+                        style: const TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  keys[i].toString(),
-                  style: const TextStyle(
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            );
-          }),
-        );
-      },
+                  );
+                }),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -619,6 +805,36 @@ class _ErrorDisplay extends StatelessWidget {
           fontFamily: 'monospace',
           fontSize: 12,
         ),
+      ),
+    );
+  }
+}
+
+class _LimitNotice extends StatelessWidget {
+  final String message;
+
+  const _LimitNotice({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2B2100),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(FluentIcons.info, size: 14, color: KetTheme.warning),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: KetTheme.warning, fontSize: 11),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -672,28 +888,50 @@ class _SimpleChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data is! List) {
+    final rawData = data is Map ? (data['data'] ?? data['points']) : data;
+    final title = data is Map ? data['title']?.toString() : null;
+    if (rawData is! List) {
       return Text(
         "Chart: Data must be a List",
         style: TextStyle(color: Colors.red, fontSize: 10),
       );
     }
-    if (data.isEmpty) {
+    if (rawData.isEmpty) {
       return Text(
         "Chart: Empty data",
         style: TextStyle(color: Colors.grey, fontSize: 10),
       );
     }
-    final List<double> points = (data as List)
-        .map((p) => (p as num).toDouble())
-        .toList();
+    final rawPoints = rawData;
+    final points = <double>[];
+    for (final point in rawPoints.take(VizLimits.maxChartPoints)) {
+      if (point is! num) {
+        return const _LimitNotice(message: 'Chart points must be numbers.');
+      }
+      points.add(point.toDouble());
+    }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: CustomPaint(
-        size: Size.infinite,
-        painter: _LineChartPainter(points: points, color: KetTheme.accent),
-      ),
+    return Column(
+      children: [
+        if (title != null) _SubHeader(title: title.toUpperCase()),
+        if (rawPoints.length > points.length)
+          _LimitNotice(
+            message:
+                'Showing ${points.length} of ${rawPoints.length} chart points.',
+          ),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _LineChartPainter(
+                points: points,
+                color: KetTheme.accent,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1019,9 +1257,20 @@ class _StatevectorChart extends StatelessWidget {
       );
     }
 
+    final totalAmplitudes = amplitudes.length;
+    if (totalAmplitudes > VizLimits.maxStatevectorAmplitudes) {
+      amplitudes = amplitudes.take(VizLimits.maxStatevectorAmplitudes).toList();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (totalAmplitudes > amplitudes.length)
+          _LimitNotice(
+            message:
+                'Showing ${amplitudes.length} of $totalAmplitudes amplitudes. '
+                'Use sparse/top states for large statevectors.',
+          ),
         if (title != null) ...[
           _SubHeader(title: title.toUpperCase()),
           const SizedBox(height: 8),

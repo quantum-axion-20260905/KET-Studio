@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/services/file_service.dart';
 import '../../core/services/editor_service.dart';
 import '../../core/theme/ket_theme.dart';
@@ -41,7 +42,10 @@ class _ExplorerWidgetState extends State<ExplorerWidget> {
   @override
   Widget build(BuildContext context) {
     final rootPath = FileService().rootPath;
-    final folderName = rootPath.split(Platform.pathSeparator).last.toUpperCase();
+    final folderName = rootPath
+        .split(FileService().pathSeparator)
+        .last
+        .toUpperCase();
 
     return Column(
       children: [
@@ -51,7 +55,9 @@ class _ExplorerWidgetState extends State<ExplorerWidget> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: KetTheme.bgHeader,
-            border: Border(bottom: BorderSide(color: KetTheme.border, width: 0.5)),
+            border: Border(
+              bottom: BorderSide(color: KetTheme.border, width: 0.5),
+            ),
           ),
           child: Row(
             children: [
@@ -137,13 +143,24 @@ class _ExplorerWidgetState extends State<ExplorerWidget> {
                         _isCreatingFolder = false;
                       }),
                     ),
-                  FileTreeItem(
-                    key: ValueKey(rootPath + _searchQuery + _treeVersion.toString()),
-                    path: rootPath,
-                    isRoot: true,
-                    level: 0,
-                    searchQuery: _searchQuery,
-                  ),
+                  if (kIsWeb)
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Local file access is available in the desktop app.\nUse the templates or create a virtual file to explore KET Studio.',
+                        style: KetTheme.descriptionStyle,
+                      ),
+                    )
+                  else
+                    FileTreeItem(
+                      key: ValueKey(
+                        rootPath + _searchQuery + _treeVersion.toString(),
+                      ),
+                      path: rootPath,
+                      isRoot: true,
+                      level: 0,
+                      searchQuery: _searchQuery,
+                    ),
                 ],
               ),
             ),
@@ -223,11 +240,15 @@ class _FileTreeItemState extends State<FileTreeItem> {
   }
 
   void _loadChildren() {
+    if (kIsWeb) return;
     if (FileSystemEntity.isDirectorySync(widget.path)) {
       _children = FileService().getFiles(widget.path);
       if (widget.searchQuery.isNotEmpty) {
         _children = _children.where((e) {
-          final name = e.path.split(Platform.pathSeparator).last.toLowerCase();
+          final name = e.path
+              .split(FileService().pathSeparator)
+              .last
+              .toLowerCase();
           return name.contains(widget.searchQuery);
         }).toList();
       }
@@ -247,7 +268,7 @@ class _FileTreeItemState extends State<FileTreeItem> {
     } else {
       try {
         final content = await FileService().readFile(widget.path);
-        final name = widget.path.split(Platform.pathSeparator).last;
+        final name = widget.path.split(FileService().pathSeparator).last;
         EditorService().openFile(name, content, realPath: widget.path);
       } catch (e) {
         debugPrint("Error reading file: $e");
@@ -261,21 +282,25 @@ class _FileTreeItemState extends State<FileTreeItem> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: _children
-            .map((e) => FileTreeItem(
-                  path: e.path,
-                  level: widget.level + 1,
-                  searchQuery: widget.searchQuery,
-                ))
+            .map(
+              (e) => FileTreeItem(
+                path: e.path,
+                level: widget.level + 1,
+                searchQuery: widget.searchQuery,
+              ),
+            )
             .toList(),
       );
     }
 
-    final name = widget.path.split(Platform.pathSeparator).last;
+    final name = widget.path.split(FileService().pathSeparator).last;
     final isDirectory = FileSystemEntity.isDirectorySync(widget.path);
     final activePath = EditorService().activeFile?.path;
     final isActive = !isDirectory && activePath == widget.path;
 
-    if (widget.searchQuery.isNotEmpty && !isDirectory && !name.toLowerCase().contains(widget.searchQuery)) {
+    if (widget.searchQuery.isNotEmpty &&
+        !isDirectory &&
+        !name.toLowerCase().contains(widget.searchQuery)) {
       return const SizedBox.shrink();
     }
 
@@ -310,29 +335,41 @@ class _FileTreeItemState extends State<FileTreeItem> {
                   decoration: BoxDecoration(
                     color: isActive
                         ? KetTheme.accentSoft
-                        : (states.isHovered ? KetTheme.bgHover : Colors.transparent),
+                        : (states.isHovered
+                              ? KetTheme.bgHover
+                              : Colors.transparent),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     children: [
                       if (isDirectory)
                         Icon(
-                          _isExpanded ? FluentIcons.chevron_down : FluentIcons.chevron_right,
+                          _isExpanded
+                              ? FluentIcons.chevron_down
+                              : FluentIcons.chevron_right,
                           size: 10,
                           color: KetTheme.textMuted,
                         )
                       else
                         const SizedBox(width: 10),
                       const SizedBox(width: 4),
-                      _FileIcon(path: widget.path, isDirectory: isDirectory, isExpanded: _isExpanded),
+                      _FileIcon(
+                        path: widget.path,
+                        isDirectory: isDirectory,
+                        isExpanded: _isExpanded,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           name,
                           style: KetTheme.bodyStyle.copyWith(
-                            color: isActive ? KetTheme.textMain : KetTheme.textSecondary,
+                            color: isActive
+                                ? KetTheme.textMain
+                                : KetTheme.textSecondary,
                             fontSize: 12.5,
-                            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight: isActive
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -340,7 +377,9 @@ class _FileTreeItemState extends State<FileTreeItem> {
                       ),
                       if (states.isHovered && !isActive)
                         Icon(
-                          isDirectory ? FluentIcons.folder_open : FluentIcons.open_file,
+                          isDirectory
+                              ? FluentIcons.folder_open
+                              : FluentIcons.open_file,
                           size: 10,
                           color: KetTheme.textMuted.withValues(alpha: 0.5),
                         ),
@@ -370,11 +409,13 @@ class _FileTreeItemState extends State<FileTreeItem> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: _children
-                .map((e) => FileTreeItem(
-                      path: e.path,
-                      level: widget.level + 1,
-                      searchQuery: widget.searchQuery,
-                    ))
+                .map(
+                  (e) => FileTreeItem(
+                    path: e.path,
+                    level: widget.level + 1,
+                    searchQuery: widget.searchQuery,
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -493,7 +534,8 @@ class _InlineCreationItemState extends State<_InlineCreationItem> {
   void _submit() async {
     final name = _controller.text.trim();
     if (name.isNotEmpty) {
-      final fullPath = "${widget.parentPath}${Platform.pathSeparator}$name";
+      final fullPath =
+          "${widget.parentPath}${FileService().pathSeparator}$name";
       try {
         if (widget.isFile) {
           await FileService().createFile(fullPath);
@@ -531,7 +573,9 @@ class _InlineCreationItemState extends State<_InlineCreationItem> {
               style: KetTheme.bodyStyle.copyWith(fontSize: 12),
               decoration: WidgetStateProperty.all(
                 BoxDecoration(
-                  border: Border(bottom: BorderSide(color: KetTheme.accent, width: 1.5)),
+                  border: Border(
+                    bottom: BorderSide(color: KetTheme.accent, width: 1.5),
+                  ),
                 ),
               ),
             ),

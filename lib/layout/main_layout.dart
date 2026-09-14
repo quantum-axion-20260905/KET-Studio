@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 
 // CONFIG & THEME
 import '../config/menu_setup.dart';
@@ -41,8 +42,12 @@ class _MainLayoutState extends State<MainLayout> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setupCommands(context);
       if (MenuService().menus.isEmpty) setupMenus(context);
-      PythonSetupService().checkAndInstallDependencies();
-      AppService().initialize();
+      // Python processes and the application data directory are native-only
+      // capabilities. Keep the browser build usable for demos and docs.
+      if (!kIsWeb) {
+        PythonSetupService().checkAndInstallDependencies();
+        AppService().initialize();
+      }
     });
   }
 

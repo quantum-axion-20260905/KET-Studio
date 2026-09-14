@@ -7,6 +7,8 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $releaseDir = Join-Path $repoRoot "build\windows\x64\runner\Release"
+$nativeHostPath = Join-Path $repoRoot "native\ket_host\build\Release\ket_host.exe"
+$nativeBuildScript = Join-Path $repoRoot "scripts\build_native_host.ps1"
 $scriptPath = Join-Path $repoRoot "installer\ket_studio.iss"
 $distDir = Join-Path $repoRoot "dist\windows-installer"
 
@@ -58,6 +60,15 @@ if ($Configuration -ne "release") {
 
 Add-GitToPath
 
+& $nativeBuildScript -Configuration Release
+if ($LASTEXITCODE -ne 0) {
+    throw "Native terminal host build failed."
+}
+
+if (-not (Test-Path $nativeHostPath)) {
+    throw "Native terminal host topilmadi: $nativeHostPath"
+}
+
 if (-not $SkipFlutterBuild) {
     Push-Location $repoRoot
     try {
@@ -75,6 +86,8 @@ if (-not (Test-Path $releaseDir)) {
 if (-not (Test-Path (Join-Path $releaseDir "ket_studio.exe"))) {
     throw "Release build ichida ket_studio.exe topilmadi."
 }
+
+Copy-Item -LiteralPath $nativeHostPath -Destination (Join-Path $releaseDir "ket_host.exe") -Force
 
 if (-not (Test-Path $distDir)) {
     New-Item -ItemType Directory -Path $distDir | Out-Null

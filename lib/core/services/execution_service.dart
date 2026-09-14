@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+import '../constants/viz_limits.dart';
 import 'settings_service.dart';
 import 'terminal_service.dart';
 import 'viz_service.dart';
@@ -79,13 +80,17 @@ class ExecutionService {
 
         if (type == VizType.inspector && payload is Map) {
           final frames = payload['frames'];
-          if (frames is List && frames.length > 100) {
-            payload['frames'] = frames.sublist(0, 100);
+          if (frames is List && frames.length > VizLimits.maxInspectorFrames) {
+            payload['frames'] = frames.sublist(0, VizLimits.maxInspectorFrames);
           }
         }
         VizService().updateData(type, payload);
       }
-    } catch (_) {}
+    } catch (error) {
+      VizService().addWarning(
+        'Invalid visualization event was ignored: $error',
+      );
+    }
   }
 
   void _flushVizInstant() {
@@ -109,15 +114,31 @@ class ExecutionService {
     if (start == -1 || end == -1 || end <= start) return;
 
     final jsonStr = cleaned.substring(start, end + 1);
+    if (utf8.encode(jsonStr).length > VizLimits.maxEventBytes) {
+      VizService().addWarning(
+        'Visualization event was ignored because it exceeds '
+        '${VizLimits.maxEventBytes ~/ (1024 * 1024)} MiB.',
+      );
+      return;
+    }
     _vizJsonQueue.add(jsonStr);
-    if (_vizJsonQueue.length > 100) {
-      _vizJsonQueue.removeRange(0, _vizJsonQueue.length - 100);
+    if (_vizJsonQueue.length > VizLimits.maxPendingEvents) {
+      _vizJsonQueue.removeRange(
+        0,
+        _vizJsonQueue.length - VizLimits.maxPendingEvents,
+      );
     }
     _scheduleVizFlush();
   }
 
   Future<void> runPython(String filePath, {String? content}) async {
     final terminal = TerminalService();
+    if (kIsWeb) {
+      terminal.write(
+        'Python execution is available in the desktop app. Use a template to preview the workspace in web mode.',
+      );
+      return;
+    }
     if (_process != null) stop();
 
     try {
@@ -183,6 +204,23 @@ builtins.ket_inspector = lambda title, frames: _viz("inspector", {"title": title
 builtins.ket_metrics = lambda metrics: _viz("metrics", metrics)
 builtins.ket_estimator = lambda estimation: _viz("estimator", estimation)
 builtins.ket_statevector = lambda data, title="Statevector": _viz("statevector", {"amplitudes": data, "title": title})
+def _ket_table(title_or_rows, rows=None, title="Table"):
+    if rows is None:
+        rows, title = title_or_rows, title
+    else:
+        title = title_or_rows
+    _viz("table", {"title": title, "rows": rows})
+
+def _ket_chart(data, title="Chart"):
+    _viz("chart", {"data": data, "title": title})
+
+def _ket_file(kind, path, title=None):
+    _viz(kind, {"path": path, "title": title or kind.title()})
+
+builtins.ket_table = _ket_table
+builtins.ket_chart = _ket_chart
+builtins.ket_image = lambda path, title="Image": _ket_file("image", path, title)
+builtins.ket_circuit = lambda path, title="Circuit": _ket_file("circuit", path, title)
 
 try:
     import matplotlib
@@ -208,6 +246,10 @@ class _Mock:
         if n == "metrics": return builtins.ket_metrics
         if n == "estimator": return builtins.ket_estimator
         if n == "statevector": return builtins.ket_statevector
+        if n == "table": return builtins.ket_table
+        if n == "chart": return builtins.ket_chart
+        if n == "image": return builtins.ket_image
+        if n == "circuit": return builtins.ket_circuit
         return lambda *a, **k: _viz(n, a[0] if a else k)
     def __call__(self, k, p): _viz(k, p)
 

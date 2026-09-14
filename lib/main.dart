@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:ket_studio/plugin_setup.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart' as flutter_acrylic;
+import 'package:flutter/foundation.dart';
 import 'core/theme/ket_theme.dart';
 import 'core/services/settings_service.dart';
 import 'dart:io';
@@ -16,7 +17,10 @@ void main() async {
   await SettingsService().initialize();
 
   // Window Manager va Acrylic initialization
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  // Desktop window APIs are not available in a browser.  Check kIsWeb
+  // before evaluating Platform, whose dart:io implementation is unsupported
+  // on web.
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await flutter_acrylic.Window.initialize();
     await windowManager.ensureInitialized();
 

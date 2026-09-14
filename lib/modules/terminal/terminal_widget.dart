@@ -1,12 +1,29 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
+import 'package:xterm3/xterm.dart';
+
 import '../../core/services/execution_service.dart';
 import '../../core/services/layout_service.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/services/terminal_service.dart';
 import '../../core/theme/ket_theme.dart';
+import '../../v03/application/runtime/runtime_supervisor.dart';
+import '../../v03/core/terminal/terminal_host.dart';
 
+/// Interactive terminal surface backed by a native PTY.
+///
+/// The old panel only displayed lines collected from a redirected Python
+/// process. This widget owns an xterm-compatible terminal session instead:
+/// input, ANSI output, resize events, interrupts and process exit all travel
+/// through the native host. Legacy execution logs are mirrored into the same
+/// terminal so the Run button and manual shell commands share one surface.
 class TerminalWidget extends StatefulWidget {
   final LayoutService layout;
+
   const TerminalWidget({super.key, required this.layout});
 
   @override
@@ -14,184 +31,243 @@ class TerminalWidget extends StatefulWidget {
 }
 
 class _TerminalWidgetState extends State<TerminalWidget> {
-  final _inputController = TextEditingController();
-  final _scrollController = ScrollController();
-  final _focusNode = FocusNode();
+  late final Terminal _terminal;
+  late final RuntimeSupervisor _runtime;
+  TerminalSession? _session;
+  StreamSubscription<String>? _outputSubscription;
+  bool _connecting = true;
+  String? _error;
 
-  bool _isScrollThrottled = false;
+  @override
+  void initState() {
+    super.initState();
+    _runtime = RuntimeSupervisor();
+    _terminal = Terminal(maxLines: SettingsService().terminalMaxLines);
+    _terminal.onOutput = _sendInput;
+    _terminal.onResize = (width, height, _, _) {
+      final session = _session;
+      if (session == null || width <= 0 || height <= 0) return;
+      unawaited(session.resize(TerminalSize(columns: width, rows: height)));
+    };
+    TerminalService().attachOutputListener(_mirrorExecutionLine);
+    unawaited(_connect());
+  }
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients && !_isScrollThrottled) {
-      _isScrollThrottled = true;
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+  void _mirrorExecutionLine(String line) {
+    _terminal.write('$line\r\n');
+  }
 
-      Future.delayed(const Duration(milliseconds: 50), () {
-        _isScrollThrottled = false;
+  void _clearTerminal() {
+    _terminal.clear();
+    if (!mounted || _error == null) return;
+    setState(() => _error = null);
+  }
+
+  Future<void> _connect() async {
+    if (kIsWeb) {
+      _onTerminalError(
+        'Interactive terminal is available in the desktop application.',
+      );
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _connecting = true;
+        _error = null;
       });
+    }
+
+    try {
+      final oldSession = _session;
+      _session = null;
+      await _outputSubscription?.cancel();
+      _outputSubscription = null;
+      if (oldSession != null) {
+        try {
+          await oldSession.terminate(force: true);
+        } catch (_) {}
+        await oldSession.dispose();
+      }
+
+      await _runtime.initialize();
+      final session = await _runtime.openTerminal(
+        workingDirectory: Directory.current.path,
+        initialSize: TerminalSize(
+          columns: _terminal.viewWidth <= 0 ? 120 : _terminal.viewWidth,
+          rows: _terminal.viewHeight <= 0 ? 32 : _terminal.viewHeight,
+        ),
+      );
+      _session = session;
+      _outputSubscription = session.output
+          .cast<List<int>>()
+          .transform(utf8.decoder)
+          .listen(_terminal.write, onError: _onTerminalError);
+      unawaited(_watchExit(session));
+      _terminal.write(
+        '\r\n\x1b[38;5;39mKET Studio interactive terminal connected.\x1b[0m\r\n',
+      );
+      if (mounted) setState(() => _connecting = false);
+    } catch (error) {
+      _onTerminalError(error);
+    }
+  }
+
+  Future<void> _watchExit(TerminalSession session) async {
+    try {
+      final code = await session.exitCode;
+      if (!identical(_session, session)) return;
+      _session = null;
+      final subscription = _outputSubscription;
+      _outputSubscription = null;
+      await subscription?.cancel();
+      await session.dispose();
+      _terminal.write(
+        '\r\n\x1b[38;5;244m[terminal process exited: $code]\x1b[0m\r\n',
+      );
+      if (mounted) setState(() => _connecting = false);
+    } catch (error) {
+      if (identical(_session, session)) _onTerminalError(error);
+    }
+  }
+
+  void _sendInput(String value) {
+    // The Run button still uses the structured execution service for KET_VIZ
+    // events. While it is active, route terminal keystrokes to that process;
+    // otherwise input belongs to the interactive shell PTY.
+    if (ExecutionService().isRunning.value) {
+      ExecutionService().writeToStdin(value);
+      return;
+    }
+
+    final session = _session;
+    if (session == null) return;
+    unawaited(session.write(utf8.encode(value)));
+  }
+
+  void _onTerminalError(Object error, [StackTrace? stackTrace]) {
+    _terminal.write('\r\n\x1b[31mKET terminal error: $error\x1b[0m\r\n');
+    if (!mounted) return;
+    setState(() {
+      _connecting = false;
+      _error = '$error';
+    });
+  }
+
+  Future<void> _interrupt() async {
+    final session = _session;
+    if (session == null) return;
+    try {
+      await session.interrupt();
+    } catch (error) {
+      _onTerminalError(error);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: Listenable.merge([TerminalService(), SettingsService()]),
-      builder: (context, _) {
-        final settings = SettingsService();
-        if (widget.layout.isBottomPanelVisible && settings.terminalAutoScroll) {
-          _scrollToBottom();
-        }
-
-        return DecoratedBox(
-          decoration: KetTheme.panelSurface(
-            elevated: true,
-            radius: KetTheme.radiusLg,
-          ),
-          child: ClipRRect(
-            borderRadius: KetTheme.radiusLg,
-            child: Column(
-              children: [
-                Container(
-                  height: 34,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: KetTheme.bgHeader,
-                    border: Border(bottom: BorderSide(color: KetTheme.border)),
+    return ColoredBox(
+      color: const Color(0xFF080C11),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 34,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                children: [
+                  Icon(
+                    FluentIcons.command_prompt,
+                    size: 13,
+                    color: KetTheme.accent,
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        FluentIcons.command_prompt,
+                  const SizedBox(width: 8),
+                  Text(
+                    _connecting ? 'Starting terminal…' : 'TERMINAL',
+                    style: KetTheme.bodyStyle.copyWith(fontSize: 12),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'PTY shell',
+                    style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
+                  ),
+                  const Spacer(),
+                  if (_error != null)
+                    Tooltip(
+                      message: _error!,
+                      child: Icon(
+                        FluentIcons.warning,
                         size: 13,
-                        color: KetTheme.accent,
+                        color: KetTheme.warning,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Terminal",
-                        style: KetTheme.bodyStyle.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12.5,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Python output",
-                        style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: Icon(
-                          FluentIcons.delete,
-                          size: 14,
-                          color: KetTheme.textMuted,
-                        ),
-                        onPressed: () => TerminalService().clear(),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          FluentIcons.chrome_close,
-                          size: 13,
-                          color: KetTheme.textMuted,
-                        ),
-                        onPressed: () => widget.layout.toggleBottomPanel(),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: SelectionArea(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(14),
-                      itemCount: TerminalService().logs.length,
-                      itemBuilder: (context, index) {
-                        final log = TerminalService().logs[index];
-                        final lower = log.toLowerCase();
-                        final isError =
-                            lower.contains('error') ||
-                            lower.contains('exception') ||
-                            lower.contains('traceback');
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Text(
-                            log,
-                            style: TextStyle(
-                              color: isError
-                                  ? KetTheme.danger
-                                  : KetTheme.textMain,
-                              fontFamily: KetTheme.isWindowsDesktop
-                                  ? 'Cascadia Mono'
-                                  : 'monospace',
-                              fontSize: settings.terminalFontSize,
-                              height: 1.28,
-                            ),
-                          ),
-                        );
-                      },
                     ),
+                  IconButton(
+                    icon: Icon(
+                      FluentIcons.clear,
+                      size: 14,
+                      color: KetTheme.textMuted,
+                    ),
+                    onPressed: _clearTerminal,
                   ),
-                ),
-                Container(
-                  height: 38,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: KetTheme.bgHeader,
-                    border: Border(top: BorderSide(color: KetTheme.border)),
+                  IconButton(
+                    icon: Icon(
+                      FluentIcons.stop,
+                      size: 14,
+                      color: KetTheme.textMuted,
+                    ),
+                    onPressed: _session == null ? null : _interrupt,
                   ),
-                  child: Row(
-                    children: [
-                      Text(
-                        ">",
-                        style: KetTheme.statusStyle.copyWith(
-                          color: KetTheme.accent,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: TextBox(
-                          controller: _inputController,
-                          focusNode: _focusNode,
-                          style: TextStyle(
-                            color: KetTheme.textMain,
-                            fontFamily: KetTheme.isWindowsDesktop
-                                ? 'Cascadia Mono'
-                                : 'monospace',
-                            fontSize: settings.terminalFontSize,
-                          ),
-                          cursorColor: KetTheme.accent,
-                          placeholder: "Python buyrug'ini yozing...",
-                          placeholderStyle: TextStyle(
-                            color: KetTheme.textMuted,
-                            fontFamily: KetTheme.isWindowsDesktop
-                                ? 'Cascadia Mono'
-                                : 'monospace',
-                          ),
-                          decoration: WidgetStateProperty.all(
-                            BoxDecoration(
-                              color: KetTheme.bgCanvas.withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: KetTheme.border),
-                            ),
-                          ),
-                          onSubmitted: (text) {
-                            if (text.isNotEmpty) {
-                              TerminalService().write("\$ $text");
-                              ExecutionService().writeToStdin(text);
-                              _inputController.clear();
-                              _focusNode.requestFocus();
-                            }
-                          },
-                        ),
-                      ),
-                    ],
+                  IconButton(
+                    icon: Icon(
+                      FluentIcons.refresh,
+                      size: 14,
+                      color: KetTheme.textMuted,
+                    ),
+                    onPressed: _connecting ? null : _connect,
                   ),
-                ),
-              ],
+                  IconButton(
+                    icon: Icon(
+                      FluentIcons.chrome_close,
+                      size: 13,
+                      color: KetTheme.textMuted,
+                    ),
+                    onPressed: () => widget.layout.toggleBottomPanel(),
+                  ),
+                ],
+              ),
             ),
           ),
-        );
-      },
+          Divider(size: 1),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+              child: TerminalView(
+                _terminal,
+                autofocus: !kIsWeb,
+                backgroundOpacity: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    TerminalService().detachOutputListener(_mirrorExecutionLine);
+    final session = _session;
+    _session = null;
+    unawaited(_outputSubscription?.cancel() ?? Future<void>.value());
+    if (session != null) {
+      unawaited(() async {
+        try {
+          await session.terminate(force: true);
+        } catch (_) {}
+        await session.dispose();
+      }());
+    }
+    unawaited(_runtime.dispose());
+    super.dispose();
   }
 }

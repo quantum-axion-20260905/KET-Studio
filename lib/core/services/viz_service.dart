@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../constants/viz_limits.dart';
+
 enum VizStatus { idle, running, hasOutput, error, stopped }
 
 enum VizType {
@@ -39,6 +41,7 @@ class VizSession {
   final DateTime startTime;
   DateTime? endTime;
   final List<VizEvent> events = [];
+  final List<String> warnings = [];
   VizStatus status;
   String? errorMessage;
 
@@ -47,8 +50,13 @@ class VizSession {
 
   void addEvent(VizEvent event) {
     events.add(event);
-    if (events.length > 50) events.removeAt(0);
+    if (events.length > VizLimits.maxEventsPerSession) events.removeAt(0);
     status = VizStatus.hasOutput;
+  }
+
+  void addWarning(String warning) {
+    warnings.add(warning);
+    if (warnings.length > 20) warnings.removeAt(0);
   }
 }
 
@@ -72,7 +80,7 @@ class VizService extends ChangeNotifier {
   void startSession(String id) {
     _currentSession = VizSession(id: id);
     _sessions.insert(0, _currentSession!);
-    if (_sessions.length > 50) _sessions.removeLast();
+    if (_sessions.length > VizLimits.maxSessions) _sessions.removeLast();
     _status = VizStatus.running;
     _selectedEvent = null;
     notifyListeners();
@@ -112,6 +120,12 @@ class VizService extends ChangeNotifier {
         notifyListeners();
       });
     }
+  }
+
+  void addWarning(String warning) {
+    if (_currentSession == null) return;
+    _currentSession!.addWarning(warning);
+    notifyListeners();
   }
 
   bool _isUpdateThrottled = false;

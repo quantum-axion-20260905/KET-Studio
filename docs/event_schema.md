@@ -1,73 +1,226 @@
-# KET Studio Event Schema Specification (v1.0)
+# KET Studio Event Schema v1
 
-This document defines the formal protocol used by KET Studio to communicate between the execution engine (Python) and the visualization frontend (Flutter).
+KET Studio Python jarayonining `stdout` oqimi orqali vizualizatsiya eventlarini
+qabul qiladi. Har bir event `KET_VIZ` prefiksi bilan boshlanadigan bitta UTF-8
+qatorda kelishi kerak.
 
-## Message Format
-All visualization messages must be printed to `stdout` as a single line starting with the prefix `KET_VIZ` followed by a JSON object.
+```text
+KET_VIZ {"kind":"histogram","payload":{"histogram":{"0":490,"1":534}}}
+```
 
-**Structure:**
+## Umumiy format
+
 ```json
-KET_VIZ {
-  "kind": "string",
-  "payload": "object|array|string",
-  "ts": "integer (unix timestamp ms)"
+{
+  "kind": "histogram",
+  "payload": {},
+  "ts": 1710000000000
 }
 ```
 
-## Supported Event Kinds
+- `kind` — event turi.
+- `payload` — shu turga mos JSON object, array yoki string.
+- `ts` — optional Unix timestamp milliseconds.
+- `flush` — protocol field emas, lekin real-time ko‘rinish uchun stdout’ni
+  har eventdan keyin flush qilish kerak.
 
-### 1. `histogram`
-Used for representing measurement results or probability distributions.
-- **Payload:**
-  - `histogram`: `Map<String, int|double>` (e.g. `{"00": 512, "11": 512}`)
-  - `title`: `String` (Optional)
+## Event turlari
 
-### 2. `heatmap`
-Used for density matrices, cost landscapes, or correlation matrices.
-- **Payload:**
-  - `data`: `List<List<double>>` (2D Matrix)
-  - `title`: `String` (Optional)
+### `histogram`
 
-### 3. `table`
-Used for structured data reporting.
-- **Payload:**
-  - `title`: `String`
-  - `data`: `List<List<any>>` (First row is usually headers)
+O‘lchov yoki ehtimollik taqsimoti.
 
-### 4. `image` / `circuit`
-Used for static drawings or plots.
-- **Payload:**
-  - `path`: `String` (Relative path to the output directory or absolute path)
-  - `title`: `String` (Optional)
+```json
+{
+  "kind": "histogram",
+  "payload": {
+    "histogram": {"00": 510, "11": 514},
+    "title": "Bell state"
+  }
+}
+```
 
-### 5. `metrics`
-Used for real-time status updates and progress tracking.
-- **Payload:**
-  - `progress`: `String` (e.g. "45%")
-  - `status`: `String`
-  - Any additional key-value pairs will be displayed in the metrics panel.
+`histogram` qiymatlari manfiy bo‘lmagan son bo‘lishi kerak. Renderer 64 ta
+bucketgacha joy ajratadi; ortiqcha bucket’lar eng katta 63 tasi va `other`
+bucket’iga yig‘iladi.
 
-### 6. `inspector`
-Used for step-by-step algorithm walkthroughs.
-- **Payload:**
-  - `title`: `String`
-  - `frames`: `List<object>` where each frame contains:
-    - `gate`: `String`
-    - `state_description`: `String`
-    - `bloch`: `List<{"theta": double, "phi": double}>` (One for each qubit)
+### `heatmap` / `matrix`
 
-### 7. `statevector`
-Used for representing complex quantum states with magnitude and phase.
-- **Payload:**
-  - `title`: `String` (Optional)
-  - `amplitudes`: `List<object>` where each object contains:
-    - `label`: `String` (e.g. "00")
-    - `mag`: `double` (Magnitude [0, 1])
-    - `phase`: `double` (Phase in radians [-pi, pi])
+2D numeric matrix:
 
----
+```json
+{
+  "kind": "heatmap",
+  "payload": {
+    "data": [[1.0, 0.2], [0.2, 0.8]],
+    "title": "Correlation"
+  }
+}
+```
 
-## Technical Requirements
-1. **UTF-8 Encoding**: The stdout stream must be UTF-8.
-2. **Atomicity**: Each `KET_VIZ` line must be a complete JSON object.
-3. **Flushing**: It is recommended to flush stdout after each visualization command to ensure real-time updates.
+Qatorlar bir xil uzunlikda bo‘lishi kerak. Renderer chegarasi: 128 qator,
+128 ustun, jami 16 384 katak.
+
+### `chart`
+
+Numeric series:
+
+```json
+{
+  "kind": "chart",
+  "payload": {
+    "data": [0.5, 0.31, 0.18, 0.09],
+    "title": "Convergence"
+  }
+}
+```
+
+2 000 nuqtadan ortig‘i ko‘rsatilmaydi.
+
+### `table`
+
+```json
+{
+  "kind": "table",
+  "payload": {
+    "title": "Summary",
+    "rows": [["Metric", "Value"], ["Shots", 1024]]
+  }
+}
+```
+
+Limit: 100 qator va 32 ustun.
+
+### `statevector`
+
+```json
+{
+  "kind": "statevector",
+  "payload": {
+    "title": "State",
+    "amplitudes": [
+      {"label": "00", "mag": 0.707, "phase": 0.0},
+      {"label": "11", "mag": 0.707, "phase": 3.14159}
+    ]
+  }
+}
+```
+
+`mag` magnitude, `phase` radians. Renderer 64 amplitudani ko‘rsatadi.
+
+### `bloch`
+
+Bir holat:
+
+```json
+{"kind":"bloch","payload":{"theta":1.5708,"phi":0.0}}
+```
+
+Ko‘p holat uchun array yuborish mumkin. Renderer 100 ta Bloch state bilan
+cheklanadi.
+
+### `inspector`
+
+Algoritm qadamlarini ko‘rsatadi:
+
+```json
+{
+  "kind": "inspector",
+  "payload": {
+    "title": "Grover steps",
+    "frames": [
+      {
+        "gate": "H(0)",
+        "state_description": "Superposition",
+        "bloch": [{"theta": 1.57, "phi": 0.0}]
+      }
+    ]
+  }
+}
+```
+
+Renderer 100 ta frame’ni qabul qiladi.
+
+### `metrics`
+
+Arbitrary JSON object. Masalan:
+
+```json
+{
+  "kind": "metrics",
+  "payload": {
+    "status": "running",
+    "progress": "60%",
+    "step": 12,
+    "energy": -1.1372
+  }
+}
+```
+
+### `estimator`
+
+Ish boshlanishidan oldingi resurs bahosi:
+
+```json
+{
+  "kind": "estimator",
+  "payload": {
+    "qubits": 8,
+    "depth": 42,
+    "total_gates": 180,
+    "gate_counts": {"H": 8, "CX": 64}
+  }
+}
+```
+
+### `image` / `circuit`
+
+Desktop loyiha papkasidagi yoki absolute path’dagi rasm:
+
+```json
+{
+  "kind": "circuit",
+  "payload": {
+    "path": ".ket/out/circuit.png",
+    "title": "Optimized circuit"
+  }
+}
+```
+
+KET Studio circuit obyektini parse qilmaydi; Qiskit/Cirq circuit’i avval PNG,
+SVG yoki boshqa render qilingan faylga aylantirilishi kerak.
+
+### `text` / `error`
+
+```json
+{"kind":"text","payload":{"content":"Simulation finished"}}
+```
+
+`error` foydalanuvchiga xato kartasi sifatida ko‘rsatiladi.
+
+## Himoya chegaralari
+
+| Chegara | Qiymat | Natija |
+|---|---:|---|
+| Bitta encoded event | 8 MiB | Event tashlab yuboriladi, warning chiqadi |
+| Pending event queue | 100 | Eng eski eventlar olib tashlanadi |
+| Event/session | 50 | Eng eski event olib tashlanadi |
+| Session history | 50 | Eng eski session olib tashlanadi |
+| Matrix | 128×128 | Limit notice ko‘rsatiladi |
+| Histogram | 64 bucket | `other` bucket qo‘shiladi |
+| Chart | 2 000 point | Dastlabki nuqtalar ko‘rsatiladi |
+| Table | 100×32 | Limit notice ko‘rsatiladi |
+| Statevector | 64 amplitude | Dastlabki amplitudalar ko‘rsatiladi |
+| Inspector/Bloch | 100 item | Ortiqcha itemlar cheklanadi |
+
+Cheklovlar tajribani to‘xtatmaydi: event katta yoki noto‘g‘ri bo‘lsa, KET Studio
+terminal va boshqa natijalarni ko‘rsatishda davom etadi.
+
+## Transport talablari
+
+1. stdout UTF-8 bo‘lishi kerak.
+2. Har bir event bitta to‘liq qator bo‘lishi kerak.
+3. `KET_VIZ` JSON’ini boshqa log bilan bir qatorda aralashtirmang.
+4. Real-time natija uchun `flush=True` ishlating.
+5. Web preview Python process va local file API’larini ishlatmaydi; to‘liq
+   event pipeline desktop build’da ishlaydi.

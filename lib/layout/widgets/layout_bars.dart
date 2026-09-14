@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../core/plugin/plugin_system.dart';
@@ -169,7 +170,7 @@ class TopBar extends StatelessWidget {
               onPressed: () => CommandService().execute("settings.open"),
             ),
             const SizedBox(width: 8),
-            const WindowButtons(),
+            if (!kIsWeb) const WindowButtons(),
           ],
         ),
       ),
@@ -366,11 +367,12 @@ class ActivityBar extends StatelessWidget {
         final allowedPanelIds = isLeft
             ? layout.allowedLeftPanelIds
             : layout.allowedRightPanelIds;
-        final panels = (isLeft
-            ? PluginRegistry().leftPanels
-            : PluginRegistry().rightPanels)
-            .where((panel) => allowedPanelIds.contains(panel.id))
-            .toList();
+        final panels =
+            (isLeft
+                    ? PluginRegistry().leftPanels
+                    : PluginRegistry().rightPanels)
+                .where((panel) => allowedPanelIds.contains(panel.id))
+                .toList();
         if (panels.isEmpty) return const SizedBox.shrink();
 
         return Padding(

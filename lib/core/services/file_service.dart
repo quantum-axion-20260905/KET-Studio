@@ -8,8 +8,10 @@ class FileService extends ChangeNotifier {
   factory FileService() => _instance;
   FileService._internal();
 
-  String _rootPath = Directory.current.path;
+  String _rootPath = kIsWeb ? 'Workspace' : Directory.current.path;
   String get rootPath => _rootPath;
+  String get pathSeparator => kIsWeb ? '/' : Platform.pathSeparator;
+  bool get supportsLocalFileSystem => !kIsWeb;
 
   void setRootPath(String path) {
     _rootPath = path;
@@ -18,6 +20,7 @@ class FileService extends ChangeNotifier {
 
   // Papka tanlash oynasini ochish
   Future<String?> pickDirectory() async {
+    if (kIsWeb) return null;
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       setRootPath(selectedDirectory);
@@ -27,6 +30,7 @@ class FileService extends ChangeNotifier {
 
   // Fayl tanlash oynasini ochish
   Future<File?> pickFile() async {
+    if (kIsWeb) return null;
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null && result.files.single.path != null) {
       return File(result.files.single.path!);
@@ -36,6 +40,7 @@ class FileService extends ChangeNotifier {
 
   // Faylni boshqa nom bilan saqlash
   Future<String?> saveFileAs(String suggestedName, String content) async {
+    if (kIsWeb) return null;
     String? outputPath = await FilePicker.platform.saveFile(
       dialogTitle: 'Save File As',
       fileName: suggestedName,
@@ -50,10 +55,11 @@ class FileService extends ChangeNotifier {
 
   // Papka ichidagi fayllarni o'qish
   List<FileSystemEntity> getFiles(String path) {
+    if (kIsWeb) return [];
     try {
       final dir = Directory(path);
       final List<FileSystemEntity> entities = dir.listSync().where((e) {
-        final name = e.path.split(Platform.pathSeparator).last;
+        final name = e.path.split(pathSeparator).last;
         return !name.startsWith(".ket_") &&
             name != "ket_viz.py" &&
             name != "ketviz.py" &&
@@ -79,11 +85,17 @@ class FileService extends ChangeNotifier {
 
   // Fayl ichini o'qish
   Future<String> readFile(String path) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Local file access is only available on desktop.');
+    }
     final file = File(path);
     return await file.readAsString();
   }
 
   Future<void> createFile(String path) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Local file access is only available on desktop.');
+    }
     final file = File(path);
     if (!await file.exists()) {
       await file.create(recursive: true);
@@ -92,6 +104,9 @@ class FileService extends ChangeNotifier {
 
   // 2. Papka yaratish
   Future<void> createFolder(String path) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Local file access is only available on desktop.');
+    }
     final dir = Directory(path);
     if (!await dir.exists()) {
       await dir.create(recursive: true);
@@ -100,6 +115,9 @@ class FileService extends ChangeNotifier {
 
   // 3. O'chirish (Fayl yoki Papka)
   Future<void> deleteEntity(String path) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Local file access is only available on desktop.');
+    }
     final type = await FileSystemEntity.type(path);
     if (type == FileSystemEntityType.file) {
       await File(path).delete();
@@ -109,8 +127,11 @@ class FileService extends ChangeNotifier {
   }
 
   Future<void> renameEntity(String oldPath, String newName) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Local file access is only available on desktop.');
+    }
     final parentPath = File(oldPath).parent.path;
-    final newPath = "$parentPath${Platform.pathSeparator}$newName";
+    final newPath = "$parentPath$pathSeparator$newName";
     if (await FileSystemEntity.isDirectory(oldPath)) {
       await Directory(oldPath).rename(newPath);
     } else {
@@ -120,6 +141,9 @@ class FileService extends ChangeNotifier {
 
   // Move
   Future<void> moveEntity(String oldPath, String newPath) async {
+    if (kIsWeb) {
+      throw UnsupportedError('Local file access is only available on desktop.');
+    }
     if (await FileSystemEntity.isDirectory(oldPath)) {
       await Directory(oldPath).rename(newPath);
     } else {
@@ -129,7 +153,7 @@ class FileService extends ChangeNotifier {
 
   // 5. Reveal in Explorer (Windows)
   Future<void> revealInExplorer(String path) async {
-    if (Platform.isWindows) {
+    if (!kIsWeb && Platform.isWindows) {
       await Process.run('explorer.exe', ['/select,', path]);
     }
   }

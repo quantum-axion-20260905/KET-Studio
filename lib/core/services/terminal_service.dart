@@ -9,13 +9,25 @@ class TerminalService extends ChangeNotifier {
 
   // Terminaldagi qatorlar
   final List<String> _logs = [];
+  void Function(String line)? _outputListener;
 
   // Getter
   List<String> get logs => _logs;
 
+  /// Connects legacy execution logs to the interactive terminal when it is
+  /// mounted. The listener remains optional for tests and startup.
+  void attachOutputListener(void Function(String line) listener) {
+    _outputListener = listener;
+  }
+
+  void detachOutputListener(void Function(String line) listener) {
+    if (identical(_outputListener, listener)) _outputListener = null;
+  }
+
   // Yozuv qo'shish (Masalan: "Process started...")
   void write(String text) {
     _logs.add(text);
+    _outputListener?.call(text);
     _limitLogs();
     _throttledNotify();
   }
@@ -23,6 +35,9 @@ class TerminalService extends ChangeNotifier {
   void writeLines(List<String> lines) {
     if (lines.isEmpty) return;
     _logs.addAll(lines);
+    for (final line in lines) {
+      _outputListener?.call(line);
+    }
     _limitLogs();
     _throttledNotify();
   }

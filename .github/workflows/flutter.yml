@@ -1,0 +1,51 @@
+name: Flutter checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Analyze, test, and web build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test
+      - name: Build web
+        run: flutter build web --release
+
+  windows-build:
+    name: Windows release build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build native terminal host
+        shell: pwsh
+        run: ./scripts/build_native_host.ps1 -Configuration Release
+      - name: Build Windows
+        run: flutter build windows --release
+      - name: Bundle native terminal host
+        shell: pwsh
+        run: Copy-Item -LiteralPath native/ket_host/build/Release/ket_host.exe -Destination build/windows/x64/runner/Release/ket_host.exe -Force

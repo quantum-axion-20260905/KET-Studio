@@ -54,6 +54,12 @@ class PythonSetupService extends ChangeNotifier {
   }
 
   Future<void> checkAndInstallDependencies({bool force = false}) async {
+    if (kIsWeb) {
+      TerminalService().write(
+        'Python environment setup is available in the desktop app.',
+      );
+      return;
+    }
     if (_isSetupComplete && !force) return;
     if (_isBusy) return;
 
@@ -217,6 +223,12 @@ except Exception as e:
   }
 
   Future<void> installPackage(String name) async {
+    if (kIsWeb) {
+      TerminalService().write(
+        'Package installation is available in the desktop app.',
+      );
+      return;
+    }
     if (_isBusy) return;
     _isBusy = true;
     notifyListeners();

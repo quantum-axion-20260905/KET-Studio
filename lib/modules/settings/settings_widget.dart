@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/services/python_setup_service.dart';
@@ -562,7 +563,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
               Text('Runtime snapshot', style: KetTheme.bodyStyle),
               const SizedBox(height: 8),
               Text(
-                'Platform: ${Platform.operatingSystem}\nInterpreter: ${settings.pythonPath}\nEnvironment ready: ${setup.isSetupComplete}',
+                'Platform: ${kIsWeb ? 'web' : Platform.operatingSystem}\nInterpreter: ${settings.pythonPath}\nEnvironment ready: ${setup.isSetupComplete}',
                 style: KetTheme.descriptionStyle,
               ),
             ],
@@ -575,7 +576,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   Future<void> _selectPythonExecutable(SettingsService settings) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: Platform.isWindows ? ['exe'] : [],
+      allowedExtensions: !kIsWeb && Platform.isWindows ? ['exe'] : [],
     );
     if (result?.files.single.path == null) return;
 

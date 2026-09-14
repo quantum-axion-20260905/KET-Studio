@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" />
-  <img src="https://img.shields.io/badge/Version-v0.2.0--alpha-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Version-v1.1.0-orange?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Language-Python%20%7C%20Dart-green?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Status-Active%20Development-purple?style=for-the-badge" />
 </p>
@@ -22,6 +22,42 @@
 **KET Studio** — bu kvant hisoblash tadqiqotlari va ilmiy dasturlash uchun maxsus ishlab chiqilgan professional ishchi muhit (IDE). U kod yozish va natijani ko'rish jarayonini uzviy bog'lab, real vaqt rejimida yuqori sifatli vizualizatsiya hamda sessiyalar tarixini boshqarish imkonini beradi.
 
 Dastur shunchaki matnli loglarni o'qish bilan cheklanib qolmay, kodingizdan kelayotgan ma'lumotlarni interaktiv grafiklar, matritsalar va jadvallar ko'rinishida taqdim etadi.
+
+### Joriy holat
+
+KET Studio ochiq manbali, desktop-first loyiha sifatida faol ishlab chiqilmoqda.
+
+- **Windows, Linux va macOS:** lokal fayllar, Python interpreter, virtual muhit va real ijro.
+- **Web preview:** editor, template va visualizatsiya UI demosi; brauzer xavfsizligi sabab lokal fayl va Python ijrosi o'chirilgan.
+- **Status:** asosiy event-driven pipeline ishlaydi; API va UI grant bosqichida yanada barqarorlashtiriladi.
+
+### Haqiqiy terminal
+
+Desktop ilovadagi Terminal paneli `xterm3` asosidagi interaktiv terminaldir:
+
+- Windows’da native `ConPTY`, Linux/macOS’da POSIX PTY ishlatiladi.
+- Klaviatura inputi, ANSI/VT chiqishi, terminal resize, `Ctrl+C`, shell exit va process-tree cleanup qo'llab-quvvatlanadi.
+- Native hostni alohida yig'ish uchun: `pwsh -File .\scripts\build_native_host.ps1`.
+- Web preview brauzer sandboxi sabab PTY shell ochmaydi; unda terminal imkoniyati desktop-only ekanligi ko'rsatiladi.
+
+## 🚀 Tez boshlash
+
+Flutter 3.47+, Dart va Python 3.10+ o'rnating. Repository root ichida:
+
+```powershell
+flutter pub get
+flutter run -d windows
+```
+
+Web preview uchun:
+
+```powershell
+flutter run -d edge
+```
+
+Windows plugin buildlari uchun Windows Developer Mode yoqilgan bo'lishi kerak.
+Tekshiruv buyruqlari va contribution tartibi [development guide](docs/development.md)
+va [CONTRIBUTING.md](CONTRIBUTING.md) da berilgan.
 
 ---
 
@@ -108,7 +144,9 @@ Har qanday dasturlash tilidan quyidagi formatda matn chiqarish orqali panelni bo
 
 ## � Qo'shimcha Hujjatlar va Namunalar
 
+*   **[Visualization Guide](docs/visualization-guide.md)**: Koddan histogram, heatmap, chart, table, statevector va boshqa natijalarni olish bo'yicha amaliy qo'llanma.
 *   **[Event Schema Spec](docs/event_schema.md)**: Vizualizatsiya protokoli bo'yicha to'liq texnik spetsifikatsiya.
+*   **[Architecture](docs/architecture.md)**: Desktop, Python runtime va native terminal chegaralari.
 *   **[Misollar (Examples)](examples/)**: 
     *   `bell_state.py`: Bell holatini simulyatsiya qilish va vizualizatsiya.
     *   `grover_search.py`: Grover algoritmi va uning bosqichlari.
@@ -119,6 +157,15 @@ Har qanday dasturlash tilidan quyidagi formatda matn chiqarish orqali panelni bo
 ## �📜 Litsenziya
 
 MIT Litsenziyasi ostida tarqatiladi. KET Studio kvant ekotizimini rivojlantirish uchun ochiq manbali loyiha hisoblanadi.
+
+## 🧭 Grant uchun rivojlanish yo'nalishi
+
+1. Windows release pipeline, code signing va foydalanuvchi uchun tekshirilgan installer.
+2. Event schema uchun backward-compatible API, parser testlari va kengroq integration testlar.
+3. Qiskit, Cirq va boshqa backendlar uchun adapterlar hamda reproducible example'lar.
+4. Linux/macOS paketlari, accessibility va xalqaro hujjatlashtirish.
+
+Loyiha arxitekturasi [docs/architecture.md](docs/architecture.md) da, o'zgarishlar esa [CHANGELOG.md](CHANGELOG.md) da yuritiladi.
 
 ---
 <p align="center"> 
