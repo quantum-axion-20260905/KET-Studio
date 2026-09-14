@@ -47,3 +47,17 @@ flutter run -d edge
 
 Browser mode is intended for UI demonstrations. Python execution and local
 file operations are native desktop features.
+
+## Research-quality changes
+
+Research workflow bilan bog‘liq o‘zgarishlar uchun [research readiness](research-readiness.md)
+dagi checklist va roadmap’ni saqlang. Ayniqsa dependency versiyalari, seed,
+backend, raw result va provenance ma’lumotlari faqat UI’da ko‘rinib qolmasligi,
+arxivlanadigan artifact sifatida test qilinishi kerak.
+
+Har qanday yangi visualization event yoki renderer uchun:
+
+1. `docs/event_schema.md`ga payload va limit yozing.
+2. Normal, malformed va oversize payload uchun test qo‘shing.
+3. `docs/visualization-guide.md`ga foydalanuvchi misolini qo‘shing.
+4. Deterministic example bo‘lsa, expected output’ni ko‘rsating.

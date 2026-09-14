@@ -9,6 +9,8 @@ All notable changes to KET Studio are documented here.
 - Added draggable left and right panel splitters with bounded desktop widths.
 - Improved status, metrics, history, explorer, terminal and visualization
   panel density for resizable Windows windows.
+- Added research-readiness documentation covering reproducibility, provenance,
+  experiment bundles, backend boundaries, validation and grant deliverables.
 
 ## 1.1.0 - 2026-09-14
 

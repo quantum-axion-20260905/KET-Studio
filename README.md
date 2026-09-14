@@ -147,6 +147,7 @@ Har qanday dasturlash tilidan quyidagi formatda matn chiqarish orqali panelni bo
 *   **[Visualization Guide](docs/visualization-guide.md)**: Koddan histogram, heatmap, chart, table, statevector va boshqa natijalarni olish bo'yicha amaliy qo'llanma.
 *   **[Event Schema Spec](docs/event_schema.md)**: Vizualizatsiya protokoli bo'yicha to'liq texnik spetsifikatsiya.
 *   **[Architecture](docs/architecture.md)**: Desktop, Python runtime va native terminal chegaralari.
+*   **[Research Readiness](docs/research-readiness.md)**: Reproducibility, experiment archive, backend chegaralari, validation va grant deliverable'lari.
 *   **[Misollar (Examples)](examples/)**: 
     *   `bell_state.py`: Bell holatini simulyatsiya qilish va vizualizatsiya.
     *   `grover_search.py`: Grover algoritmi va uning bosqichlari.
