@@ -89,7 +89,8 @@ KET_VIZ {"kind":"text","payload":{"content":"Salom KET Studio"}}
 
 Qo‘llab-quvvatlanadigan event turlari, payload limitlari va xatolik holatlari
 uchun [Visualization Guide](docs/visualization-guide.md) hamda [Event Schema](docs/event_schema.md)
-ni o‘qing.
+ni o‘qing. Boshlang‘ichdan to‘liq amaliy workflow uchun [Getting Started](docs/getting-started.md)
+qo‘llanmasi ham mavjud.
 
 ## Windows installer
 
