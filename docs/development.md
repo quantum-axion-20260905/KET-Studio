@@ -20,6 +20,7 @@ flutter analyze
 flutter test
 flutter build web --release
 flutter build windows --release
+dart run msix:create
 ```
 
 To create the Windows installer (including `ket_host.exe` beside the Flutter
@@ -29,9 +30,11 @@ executable), run:
 pwsh -File .\scripts\build_windows_installer.ps1
 ```
 
-The Windows build may require an elevated or administrator-approved machine
-setup, but the application itself is designed to install per-user through the
-Inno Setup script in `installer/`.
+The Windows build is the only currently supported release target. MSIX is the
+preferred package for controlled distribution; Inno Setup remains the EXE
+fallback when certificate trust is not available. See the full
+[Windows distribution guide](windows-installer.md) for signing, clean-machine
+verification and artifact checksums.
 
 ## Running locally
 

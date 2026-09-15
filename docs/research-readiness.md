@@ -6,7 +6,7 @@ va grant bosqichida qo‘shilishi kerak bo‘lgan research infrastructure.
 
 ## Qisqa xulosa
 
-KET Studio v1.2.0 exploratory research, ta’lim, algoritm prototyping va
+KET Studio v1.3.0 exploratory research, ta’lim, algoritm prototyping va
 Qiskit/Aer simulation uchun ishlatilishi mumkin. U Python kodini ishga tushiradi,
 real desktop terminal beradi va natijalarni event-driven vizualizatsiya qiladi.
 
@@ -30,7 +30,7 @@ mustaqil qayta ishga tushirish talab qilinadi.
 | Session history | UI xotirasida, bounded | Ilova yopilganda to‘liq session arxivi saqlanmaydi |
 | Reproducibility | Manual checklist bilan | Avtomatik manifest va dependency lock hali yo‘q |
 | Windows desktop | Tekshirilgan | ConPTY terminal va release build mavjud |
-| Linux/macOS | Arxitekturaga kiritilgan | Har platforma uchun alohida CI/integration tekshiruvi kerak |
+| Linux/macOS | Release yo‘q | Roadmap; alohida build, PTY va integration tekshiruvi kerak |
 | Web | Demo/preview | Local Python, file system va PTY ishlamaydi |
 
 ### Vizualizatsiya xavfsiz limitlari
@@ -155,7 +155,7 @@ Tavsiya etiladigan `manifest.json` maydonlari:
 ```json
 {
   "schema_version": 1,
-  "app_version": "1.2.0",
+  "app_version": "1.3.0",
   "git_commit": "<commit-hash>",
   "script_sha256": "<sha256>",
   "started_at_utc": "2026-09-14T00:00:00Z",

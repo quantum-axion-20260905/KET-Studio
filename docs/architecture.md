@@ -43,10 +43,13 @@ preserving a testable protocol.
 
 ## Platform boundary
 
-The Windows/Linux/macOS application can access local files, run Python, and
-manage native window chrome. The web build is a safe visual/demo surface:
+The shipped desktop target is Windows 10/11 x64. It can access local files, run
+Python, manage native window chrome and connect the real ConPTY terminal.
+Linux/macOS are architectural roadmap targets, not released or supported
+installers yet; each needs its own PTY, packaging and integration test before
+being advertised as available. The web build is a safe visual/demo surface:
 templates and the editor remain available, while local filesystem access,
-Python execution, package installation, and native window controls are disabled
+Python execution, package installation and native window controls are disabled
 with clear messaging.
 
 ## Extension contract

@@ -6,6 +6,17 @@ All notable changes to KET Studio are documented here.
 
 No changes yet.
 
+## 1.3.0 - 2026-09-15
+
+- Added a transparent KET Studio PNG brand mark and regenerated the Windows
+  application icon from it.
+- Added reproducible MSIX packaging metadata and documented certificate trust,
+  signing, fallback EXE distribution and clean-machine verification.
+- Clarified that Windows 10/11 x64 is the only shipped desktop target; Linux
+  and macOS remain explicitly marked as roadmap platforms.
+- Tightened release documentation around hashes, native terminal packaging,
+  upgrade testing and supply-chain evidence.
+
 ## 1.2.0 - 2026-09-15
 
 - Added English/O‘zbekcha localization for the tutorial surface, Settings,

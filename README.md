@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/quantum.jpg" width="160" />
+  <img src="assets/ket_studio_logo.png" width="160" alt="KET Studio logo" />
 </p>
 
 <h1 align="center">KET Studio</h1>
@@ -9,167 +9,137 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" />
-  <img src="https://img.shields.io/badge/Version-v1.2.0-orange?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Language-Python%20%7C%20Dart-green?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Status-Active%20Development-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-blue?style=for-the-badge&logo=windows" />
+  <img src="https://img.shields.io/badge/Version-v1.3.0-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
 </p>
 
----
+KET Studio — Python asosidagi kvant tajribalarini yozish, haqiqiy terminalda
+ishga tushirish, natijalarni vizual ko‘rish va tajriba izlarini saqlash uchun
+open-source desktop research workspace.
 
-## 🚀 Loyiha Haqida
+## Platforma holati
 
-**KET Studio** — bu kvant hisoblash tadqiqotlari va ilmiy dasturlash uchun maxsus ishlab chiqilgan professional ishchi muhit (IDE). U kod yozish va natijani ko'rish jarayonini uzviy bog'lab, real vaqt rejimida yuqori sifatli vizualizatsiya hamda sessiyalar tarixini boshqarish imkonini beradi.
+| Platforma | Holat | Izoh |
+|---|---|---|
+| Windows 10/11 x64 | **Mavjud** | Tekshirilgan desktop build, real ConPTY terminal, MSIX va EXE installer |
+| Linux | Rejalashtirilgan | Release artifact va native PTY testi hali yo‘q |
+| macOS | Rejalashtirilgan | Release artifact va native PTY testi hali yo‘q |
+| Web preview | Demo | Browser sandbox sabab Python, fayl tizimi va PTY o‘chirilgan |
 
-Dastur shunchaki matnli loglarni o'qish bilan cheklanib qolmay, kodingizdan kelayotgan ma'lumotlarni interaktiv grafiklar, matritsalar va jadvallar ko'rinishida taqdim etadi.
+Linux va macOS nomlari arxitektura yo‘nalishi sifatida ko‘rsatiladi; ular hozir
+foydalanuvchiga tayyor release sifatida va’da qilinmaydi.
 
-### Joriy holat
+## Tez boshlash
 
-KET Studio ochiq manbali, desktop-first loyiha sifatida faol ishlab chiqilmoqda.
-
-- **Windows, Linux va macOS:** lokal fayllar, Python interpreter, virtual muhit va real ijro.
-- **Web preview:** editor, template va visualizatsiya UI demosi; brauzer xavfsizligi sabab lokal fayl va Python ijrosi o'chirilgan.
-- **Status:** asosiy event-driven pipeline ishlaydi; API va UI grant bosqichida yanada barqarorlashtiriladi.
-
-### Haqiqiy terminal
-
-Desktop ilovadagi Terminal paneli `xterm3` asosidagi interaktiv terminaldir:
-
-- Windows’da native `ConPTY`, Linux/macOS’da POSIX PTY ishlatiladi.
-- Klaviatura inputi, ANSI/VT chiqishi, terminal resize, `Ctrl+C`, shell exit va process-tree cleanup qo'llab-quvvatlanadi.
-- Native hostni alohida yig'ish uchun: `pwsh -File .\scripts\build_native_host.ps1`.
-- Web preview brauzer sandboxi sabab PTY shell ochmaydi; unda terminal imkoniyati desktop-only ekanligi ko'rsatiladi.
-
-## 🚀 Tez boshlash
-
-Flutter 3.47+, Dart va Python 3.10+ o'rnating. Repository root ichida:
+Talablar: Flutter 3.47+, Dart, Python 3.10+ va Windows uchun Visual Studio C++
+workload. Windows plugin buildlari uchun Developer Mode yoqilgan bo‘lishi
+kerak.
 
 ```powershell
 flutter pub get
 flutter run -d windows
 ```
 
-Web preview uchun:
+Browser preview faqat UI ko‘rsatmasi uchun:
 
 ```powershell
 flutter run -d edge
 ```
 
-Windows plugin buildlari uchun Windows Developer Mode yoqilgan bo'lishi kerak.
-Tekshiruv buyruqlari va contribution tartibi [development guide](docs/development.md)
-va [CONTRIBUTING.md](CONTRIBUTING.md) da berilgan.
+## Haqiqiy terminal
 
----
+Windows desktop’dagi Terminal paneli `xterm3` va native `ket_host.exe` orqali
+ishlaydi:
 
-## 🧠 Dastur Qanday Ishlaydi?
+- Windows ConPTY, ANSI/VT output, keyboard input va terminal resize;
+- `Ctrl+C`, shell exit va process-tree cleanup;
+- native host bilan length-framed JSON transport;
+- browser preview’da aniq “desktop-only” holati.
 
-KET Studio **Event-Driven (Voqealarga asoslangan)** arxitektura tamoyili asosida ishlaydi. 
+Native hostni alohida tekshirish:
 
-1. **Ijro (Execution):** Siz yozgan Python kodi alohida jarayon (process) sifatida ishga tushadi.
-2. **Kuzatuv (Interception):** IDE kodingizdan chiqayotgan `stdout` (standard chiqish) oqimini real vaqtda kuzatib boradi.
-3. **Protokol:** Agar kodingizda maxsus `KET_VIZ` prefiksi bilan boshlangan JSON xabarlar paydo bo'lsa, IDE ularni "vizualizatsiya voqeasi" sifatida taniydi.
-4. **Rendering:** Olingan ma'lumotlar vizualizatsiya panelida mos komponent (Gistogramma, Heatmap, Text va h.k.) orqali chizib beriladi.
+```powershell
+pwsh -File .\scripts\build_native_host.ps1
+```
 
----
+## Vizualizatsiya workflow’i
 
-## 🛠 Nimaga Asoslangan?
-
-Dastur eng zamonaviy texnologiyalar yig'indisidan tashkil topgan:
-
-*   **Frontend (UI):** [Flutter](https://flutter.dev/) (Dart) — Yuqori samaradorlik va Windows platformasida "native" interfeys tajribasi.
-*   **Backend (Engine):** [Python 3.10+](https://www.python.org/) — Ilmiy hisoblashlar va kvant algoritmlarini bajarish uchun asosiy vosita.
-*   **Ma'lumotlar oqimi:** Stream-based terminal emulation va asynchronous JSON processing.
-*   **Dizayn:** Microsoft Fluent Design tizimiga asoslangan interfeys.
-
----
-
-## 📊 Vizualizatsiya Paneliga Ma'lumot Uzatish
-
-Dastur kodingizdan panelga ma'lumot uzatishning uch xil professional usulini taqdim etadi:
-
-### 1. `ket_viz` Modulidan Foydalanish (Tavsiya etiladi)
-IDE kodingiz ishga tushishi bilan loyiha papkasiga virtual `ket_viz.py` modulini ineksiya qiladi. Undan foydalanish juda oddiy:
+Python process stdout’iga `KET_VIZ` JSON event chiqaradi. KET Studio event’ni
+tekshiradi va mos renderer’da ko‘rsatadi. Tavsiya etiladigan API:
 
 ```python
 import ket_viz
 
-# 1. Gistogramma (Kvant o'lchov natijalari uchun)
 counts = {"00": 480, "01": 20, "10": 30, "11": 494}
 ket_viz.histogram(counts, title="Bell State Results")
 
-# 2. Heatmap (Zichlik matritsalari uchun)
 matrix = [[0.8, 0.1], [0.1, 0.0]]
 ket_viz.heatmap(matrix, title="Density Matrix")
 
-# 3. Professional Jadvallar
-data = [["Parametr", "Qiymat"], ["Qubits", 2], ["Shots", 1024]]
-ket_viz.table("Simulyatsiya Tafsilotlari", data)
+ket_viz.table("Simulation details", [["Qubits", 2], ["Shots", 1024]])
+ket_viz.metrics({"seed": 20260914, "backend": "AerSimulator"})
 ```
 
-### 2. Matplotlib Avtomatik Interfetsiya
-Agar kodingizda `matplotlib.pyplot` ishlatilgan bo'lsa, siz hech qanday kod o'zgartirishingiz shart emas. IDE `plt.show()` komandasini avtomatik ushlab oladi va natijani rasm (image) ko'rinishida panelga chiqaradi.
+Raw protocol ham mavjud:
 
-### 3. Protokol Orqali Uzatish (Raw Protocol)
-Har qanday dasturlash tilidan quyidagi formatda matn chiqarish orqali panelni boshqarish mumkin:
-`KET_VIZ {"kind": "text", "payload": {"content": "Salom Dunyo"}}`
+```text
+KET_VIZ {"kind":"text","payload":{"content":"Salom KET Studio"}}
+```
 
----
+Qo‘llab-quvvatlanadigan event turlari, payload limitlari va xatolik holatlari
+uchun [Visualization Guide](docs/visualization-guide.md) hamda [Event Schema](docs/event_schema.md)
+ni o‘qing.
 
-## 💎 Professional Foydalanish Bo'yicha Ko'rsatmalar
+## Windows installer
 
-1.  **Python Sozlamalari:**
-    *   `Settings` paneliga o'ting va kompyuteringizdagi Python interpreter yo'lini (`python.exe`) ko'rsating.
-2.  **Kutubxonalar Boshqaruvi:**
-    *   `Help -> Packages` menyusi orqali kerakli kutubxonalarni (`qiskit`, `numpy`, `matplotlib`) to'g'ridan-to'g'ri IDE orqali o'rnating.
-3.  **Loyiha Strukturasi:**
-    *   Loyihangizda `.py` faylini yarating.
-    *   Kodingizda vizualizatsiya funksiyalaridan foydalaning.
-    *   `Run` tugmasini bosing va o'ng tarafdagi **Visualization** panelida natijalarni kuzating.
-4.  **Tarixni Kuzatish:**
-    *   Har bir kod ijrosi alohida sessiya sifatida saqlanadi. Panelning chap tarafidagi tarix tugmasi orqali avvalgi natijalarga qaytishingiz mumkin.
+Release build uchun:
 
----
+```powershell
+flutter pub get
+dart run flutter_launcher_icons
+pwsh -File .\scripts\build_native_host.ps1
+flutter analyze
+flutter test
+dart run msix:create
+```
 
-## 📋 Qo'llab-quvvatlanadigan Vizualizatsiya Turlari
+To‘liq MSIX, sertifikat, EXE fallback, checksum va clean-machine checklist
+[Windows distribution guide](docs/windows-installer.md)da berilgan. Shaxsiy
+signing key repository’ga qo‘shilmaydi.
 
-*   **`text`**: Boyitilgan matnli loglar.
-*   **`table`**: Ma'lumotlar jadvali.
-*   **`heatmap`**: Matritsa va issiqlik xaritalari.
-*   **`histogram`**: Statistik taqsimotlar.
-*   **`image/circuit`**: Chizmalar, plots va sxemalar.
-*   **`metrics`**: Real vaqt rejimida o'zgaruvchi ko'rsatkichlar.
-*   **`error`**: Python xatolarining chiroyli va tushunarli ko'rinishi.
+## Research readiness
 
----
+KET Studio exploratory research, ta’lim va algorithm prototyping uchun
+ishlatilishi mumkin. U hozircha ilmiy natijani mustaqil tasdiqlovchi backend
+emas: backend SDK, seed, package versiyalari, raw result va commit hash’ni
+alohida saqlash kerak.
 
-## � Qo'shimcha Hujjatlar va Namunalar
+Publication yoki grant tajribasida quyidagilarni arxivlang:
 
-*   **[Visualization Guide](docs/visualization-guide.md)**: Koddan histogram, heatmap, chart, table, statevector va boshqa natijalarni olish bo'yicha amaliy qo'llanma.
-*   **[Event Schema Spec](docs/event_schema.md)**: Vizualizatsiya protokoli bo'yicha to'liq texnik spetsifikatsiya.
-*   **[Architecture](docs/architecture.md)**: Desktop, Python runtime va native terminal chegaralari.
-*   **[Research Readiness](docs/research-readiness.md)**: Reproducibility, experiment archive, backend chegaralari, validation va grant deliverable'lari.
-*   **[Tutorials](docs/tutorials.md)**: English/O‘zbekcha darslar, runnable template’lar va yangi tutorial qo‘shish formati.
-*   **[Misollar (Examples)](examples/)**: 
-    *   `bell_state.py`: Bell holatini simulyatsiya qilish va vizualizatsiya.
-    *   `grover_search.py`: Grover algoritmi va uning bosqichlari.
-    *   `phase_evolution.py`: Kvant holati fazasining vaqt bo'yicha o'zgarishi (Phase Color Evolution).
+1. Git commit/tag va script SHA-256.
+2. Python version va pinned package snapshot.
+3. Backend, qubit, depth, shots, seed va optimizer parametrlari.
+4. Raw result, stdout/stderr, visual artifacts va event stream.
+5. KET Studio versiyasi, OS va qayta ishga tushirish yozuvi.
 
----
+Chegaralar va grant deliverable’lari [Research Readiness](docs/research-readiness.md)
+da, tizim chegarasi [Architecture](docs/architecture.md)da yozilgan.
 
-## �📜 Litsenziya
+## Hissa qo‘shish
 
-MIT Litsenziyasi ostida tarqatiladi. KET Studio kvant ekotizimini rivojlantirish uchun ochiq manbali loyiha hisoblanadi.
+```powershell
+flutter analyze
+flutter test
+flutter build windows --release
+```
 
-## 🧭 Grant uchun rivojlanish yo'nalishi
+Yangi event yoki renderer qo‘shilganda schema, limit, malformed payload testi,
+foydalanuvchi misoli va deterministic expected output ham qo‘shilsin. Batafsil
+qoidalar [Development Guide](docs/development.md) va [CONTRIBUTING.md](CONTRIBUTING.md)
+da.
 
-1. Windows release pipeline, code signing va foydalanuvchi uchun tekshirilgan installer.
-2. Event schema uchun backward-compatible API, parser testlari va kengroq integration testlar.
-3. Qiskit, Cirq va boshqa backendlar uchun adapterlar hamda reproducible example'lar.
-4. Linux/macOS paketlari, accessibility va xalqaro hujjatlashtirish.
+## Litsenziya
 
-Loyiha arxitekturasi [docs/architecture.md](docs/architecture.md) da, o'zgarishlar esa [CHANGELOG.md](CHANGELOG.md) da yuritiladi.
-
----
-<p align="center"> 
-  <b>KET Studio — Kvant kelajagi sari intiluvchan muhandislar tanlovi.</b> 
-</p>
+MIT. KET Studio ochiq manbali loyiha sifatida hamkorlik va takrorlanadigan
+research workflow’larini qo‘llab-quvvatlash uchun ishlab chiqiladi.
