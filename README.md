@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" />
-  <img src="https://img.shields.io/badge/Version-v1.1.0-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Version-v1.2.0-orange?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Language-Python%20%7C%20Dart-green?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Status-Active%20Development-purple?style=for-the-badge" />
 </p>
@@ -148,6 +148,7 @@ Har qanday dasturlash tilidan quyidagi formatda matn chiqarish orqali panelni bo
 *   **[Event Schema Spec](docs/event_schema.md)**: Vizualizatsiya protokoli bo'yicha to'liq texnik spetsifikatsiya.
 *   **[Architecture](docs/architecture.md)**: Desktop, Python runtime va native terminal chegaralari.
 *   **[Research Readiness](docs/research-readiness.md)**: Reproducibility, experiment archive, backend chegaralari, validation va grant deliverable'lari.
+*   **[Tutorials](docs/tutorials.md)**: English/O‘zbekcha darslar, runnable template’lar va yangi tutorial qo‘shish formati.
 *   **[Misollar (Examples)](examples/)**: 
     *   `bell_state.py`: Bell holatini simulyatsiya qilish va vizualizatsiya.
     *   `grover_search.py`: Grover algoritmi va uning bosqichlari.

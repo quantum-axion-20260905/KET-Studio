@@ -5,6 +5,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/localization/app_localizations.dart';
 import '../../core/services/python_setup_service.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/theme/ket_theme.dart';
@@ -22,6 +23,8 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   );
 
   String _section = 'appearance';
+
+  AppStrings get _strings => AppStrings.forLanguage(SettingsService().language);
 
   @override
   void dispose() {
@@ -45,13 +48,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
             children: [
               Icon(FluentIcons.settings, color: KetTheme.accent, size: 18),
               const SizedBox(width: 10),
-              const Text('Settings'),
+              Text(_strings.get('settings')),
             ],
           ),
-          constraints: const BoxConstraints(maxWidth: 1040, maxHeight: 760),
+          constraints: const BoxConstraints(maxWidth: 1040, maxHeight: 720),
           content: SizedBox(
-            width: 980,
-            height: 620,
+            width: 960,
+            height: 570,
             child: Row(
               children: [
                 _buildSidebar(),
@@ -60,7 +63,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                   child: DecoratedBox(
                     decoration: KetTheme.panelSurface(),
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       child: SingleChildScrollView(
                         child: _buildSection(settings, setup),
                       ),
@@ -73,11 +76,11 @@ class _SettingsWidgetState extends State<SettingsWidget> {
           actions: [
             Button(
               onPressed: _copySettingsJson,
-              child: const Text('Copy JSON'),
+              child: Text(_strings.get('copyJson')),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text(_strings.get('close')),
             ),
           ],
         );
@@ -87,49 +90,49 @@ class _SettingsWidgetState extends State<SettingsWidget> {
 
   Widget _buildSidebar() {
     return SizedBox(
-      width: 210,
+      width: 196,
       child: DecoratedBox(
         decoration: KetTheme.panelSurface(elevated: true),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('CONFIGURATION', style: KetTheme.headerStyle),
-              const SizedBox(height: 14),
+              Text(_strings.get('configuration'), style: KetTheme.headerStyle),
+              const SizedBox(height: 10),
               _SectionButton(
-                label: 'Appearance',
+                label: _strings.get('appearance'),
                 icon: FluentIcons.color,
                 selected: _section == 'appearance',
                 onPressed: () => setState(() => _section = 'appearance'),
               ),
               _SectionButton(
-                label: 'Editor',
+                label: _strings.get('editor'),
                 icon: FluentIcons.edit,
                 selected: _section == 'editor',
                 onPressed: () => setState(() => _section = 'editor'),
               ),
               _SectionButton(
-                label: 'Terminal',
+                label: _strings.get('terminal'),
                 icon: FluentIcons.command_prompt,
                 selected: _section == 'terminal',
                 onPressed: () => setState(() => _section = 'terminal'),
               ),
               _SectionButton(
-                label: 'Environment',
+                label: _strings.get('environment'),
                 icon: FluentIcons.processing,
                 selected: _section == 'environment',
                 onPressed: () => setState(() => _section = 'environment'),
               ),
               _SectionButton(
-                label: 'Advanced',
+                label: _strings.get('advanced'),
                 icon: FluentIcons.developer_tools,
                 selected: _section == 'advanced',
                 onPressed: () => setState(() => _section = 'advanced'),
               ),
               const Spacer(),
               Text(
-                'KET Studio professional configuration surface',
+                _strings.get('configurationHint'),
                 style: KetTheme.descriptionStyle,
               ),
             ],
@@ -161,8 +164,8 @@ class _SettingsWidgetState extends State<SettingsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Appearance',
-          subtitle: 'Global application shell, density, and theme controls.',
+          title: _strings.get('appearance'),
+          subtitle: _strings.get('appearanceHint'),
         ),
         const SizedBox(height: 18),
         _SettingCard(
@@ -170,17 +173,44 @@ class _SettingsWidgetState extends State<SettingsWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _LabeledRow(
-                title: 'Theme mode',
-                subtitle: 'Switch between light and dark desktop themes.',
+                title: _strings.get('language'),
+                subtitle: _strings.get('languageHint'),
+                trailing: SizedBox(
+                  width: 180,
+                  child: ComboBox<AppLanguage>(
+                    value: settings.language,
+                    items: [
+                      ComboBoxItem(
+                        value: AppLanguage.english,
+                        child: Text(_strings.get('english')),
+                      ),
+                      ComboBoxItem(
+                        value: AppLanguage.uzbek,
+                        child: Text(_strings.get('uzbek')),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) settings.setLanguage(value);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _LabeledRow(
+                title: _strings.get('themeMode'),
+                subtitle: _strings.get('themeModeHint'),
                 trailing: SizedBox(
                   width: 180,
                   child: ComboBox<ThemeMode>(
                     value: settings.themeMode,
-                    items: const [
-                      ComboBoxItem(value: ThemeMode.dark, child: Text('Dark')),
+                    items: [
+                      ComboBoxItem(
+                        value: ThemeMode.dark,
+                        child: Text(_strings.get('dark')),
+                      ),
                       ComboBoxItem(
                         value: ThemeMode.light,
-                        child: Text('Light'),
+                        child: Text(_strings.get('light')),
                       ),
                     ],
                     onChanged: (value) {
@@ -190,10 +220,10 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text('Accent color', style: KetTheme.bodyStyle),
+              Text(_strings.get('accentColor'), style: KetTheme.bodyStyle),
               const SizedBox(height: 6),
               Text(
-                'Used across active panels, buttons, and emphasis states.',
+                _strings.get('accentColorHint'),
                 style: KetTheme.descriptionStyle,
               ),
               const SizedBox(height: 12),
@@ -241,15 +271,15 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ),
         const SizedBox(height: 14),
         _ToggleCard(
-          title: 'Compact density',
-          subtitle: 'Use tighter spacing across menus, bars, and controls.',
+          title: _strings.get('compactDensity'),
+          subtitle: _strings.get('compactDensityHint'),
           value: settings.compactMode,
           onChanged: settings.setCompactMode,
         ),
         const SizedBox(height: 14),
         _ToggleCard(
-          title: 'Start maximized',
-          subtitle: 'Open the desktop shell maximized on startup.',
+          title: _strings.get('startMaximized'),
+          subtitle: _strings.get('startMaximizedHint'),
           value: settings.startMaximized,
           onChanged: settings.setStartMaximized,
         ),
@@ -262,13 +292,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Editor',
-          subtitle: 'Code editing behavior, readability, and save workflow.',
+          title: _strings.get('editor'),
+          subtitle: _strings.get('editorHint'),
         ),
         const SizedBox(height: 18),
         _SliderCard(
-          title: 'Editor font size',
-          subtitle: 'Controls the main code editor text size.',
+          title: _strings.get('editorFontSize'),
+          subtitle: _strings.get('editorFontSizeHint'),
           valueLabel: '${settings.fontSize.toStringAsFixed(1)} px',
           value: settings.fontSize,
           min: 10,
@@ -277,8 +307,8 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ),
         const SizedBox(height: 14),
         _SliderCard(
-          title: 'Editor line height',
-          subtitle: 'Increase vertical spacing for denser or airier code.',
+          title: _strings.get('editorLineHeight'),
+          subtitle: _strings.get('editorLineHeightHint'),
           valueLabel: settings.editorLineHeight.toStringAsFixed(2),
           value: settings.editorLineHeight,
           min: 1.1,
@@ -287,15 +317,15 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ),
         const SizedBox(height: 14),
         _ToggleCard(
-          title: 'Word wrap',
-          subtitle: 'Wrap long lines inside the editor viewport.',
+          title: _strings.get('wordWrap'),
+          subtitle: _strings.get('wordWrapHint'),
           value: settings.editorWordWrap,
           onChanged: settings.setEditorWordWrap,
         ),
         const SizedBox(height: 14),
         _ToggleCard(
-          title: 'Auto save',
-          subtitle: 'Persist real files automatically after edits settle.',
+          title: _strings.get('autoSave'),
+          subtitle: _strings.get('autoSaveHint'),
           value: settings.autoSave,
           onChanged: settings.setAutoSave,
         ),
@@ -308,13 +338,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Terminal',
-          subtitle: 'Runtime output rendering, retention, and run logging.',
+          title: _strings.get('terminal'),
+          subtitle: _strings.get('terminalHint'),
         ),
         const SizedBox(height: 18),
         _SliderCard(
-          title: 'Terminal font size',
-          subtitle: 'Controls terminal output and stdin input text size.',
+          title: _strings.get('terminalFontSize'),
+          subtitle: _strings.get('terminalFontSizeHint'),
           valueLabel: '${settings.terminalFontSize.toStringAsFixed(1)} px',
           value: settings.terminalFontSize,
           min: 10,
@@ -326,13 +356,10 @@ class _SettingsWidgetState extends State<SettingsWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Maximum retained terminal lines',
-                style: KetTheme.bodyStyle,
-              ),
+              Text(_strings.get('terminalMaxLines'), style: KetTheme.bodyStyle),
               const SizedBox(height: 6),
               Text(
-                'Older lines are trimmed once this limit is reached.',
+                _strings.get('terminalMaxLinesHint'),
                 style: KetTheme.descriptionStyle,
               ),
               const SizedBox(height: 12),
@@ -364,22 +391,22 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ),
         const SizedBox(height: 14),
         _ToggleCard(
-          title: 'Auto scroll terminal',
-          subtitle: 'Keep the terminal pinned to the latest output.',
+          title: _strings.get('autoScroll'),
+          subtitle: _strings.get('autoScrollHint'),
           value: settings.terminalAutoScroll,
           onChanged: settings.setTerminalAutoScroll,
         ),
         const SizedBox(height: 14),
         _ToggleCard(
-          title: 'Clear terminal on run',
-          subtitle: 'Clear previous output before starting a new execution.',
+          title: _strings.get('clearTerminal'),
+          subtitle: _strings.get('clearTerminalHint'),
           value: settings.clearTerminalOnRun,
           onChanged: settings.setClearTerminalOnRun,
         ),
         const SizedBox(height: 14),
         _ToggleCard(
-          title: 'Show execution details',
-          subtitle: 'Print interpreter, project, and entrypoint metadata.',
+          title: _strings.get('executionDetails'),
+          subtitle: _strings.get('executionDetailsHint'),
           value: settings.showExecutionDetails,
           onChanged: settings.setShowExecutionDetails,
         ),
@@ -392,31 +419,34 @@ class _SettingsWidgetState extends State<SettingsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Environment',
-          subtitle: 'Interpreter path, Python environment, and Qiskit status.',
+          title: _strings.get('environment'),
+          subtitle: _strings.get('environmentHint'),
         ),
         const SizedBox(height: 18),
         _SettingCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Python interpreter', style: KetTheme.bodyStyle),
+              Text(
+                _strings.get('pythonInterpreter'),
+                style: KetTheme.bodyStyle,
+              ),
               const SizedBox(height: 6),
               Text(
-                'This path is used for script execution and package management.',
+                _strings.get('pythonInterpreterHint'),
                 style: KetTheme.descriptionStyle,
               ),
               const SizedBox(height: 12),
               TextBox(
                 controller: _pythonController,
-                placeholder: 'python or full path to python.exe',
+                placeholder: 'python yoki python.exe to‘liq manzili',
                 onChanged: settings.setPythonPath,
                 suffix: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Button(
                       onPressed: () => _selectPythonExecutable(settings),
-                      child: const Text('Browse'),
+                      child: Text(_strings.get('browse')),
                     ),
                     const SizedBox(width: 6),
                     Button(
@@ -424,7 +454,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                         _pythonController.text = 'python';
                         settings.setPythonPath('python');
                       },
-                      child: const Text('Reset'),
+                      child: Text(_strings.get('reset')),
                     ),
                   ],
                 ),
@@ -437,20 +467,27 @@ class _SettingsWidgetState extends State<SettingsWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Environment status', style: KetTheme.bodyStyle),
+              Text(
+                _strings.get('environmentStatus'),
+                style: KetTheme.bodyStyle,
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 children: [
                   _StatusPill(
-                    label: setup.isSetupComplete ? 'Ready' : 'Not ready',
+                    label: setup.isSetupComplete
+                        ? _strings.get('ready')
+                        : _strings.get('notReady'),
                     accent: setup.isSetupComplete
                         ? KetTheme.success
                         : KetTheme.warning,
                   ),
                   _StatusPill(
-                    label: setup.isBusy ? 'Provisioning' : 'Idle',
+                    label: setup.isBusy
+                        ? _strings.get('provisioning')
+                        : _strings.get('idle'),
                     accent: setup.isBusy ? KetTheme.accent : KetTheme.textMuted,
                   ),
                   _StatusPill(
@@ -475,12 +512,12 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                     onPressed: setup.isBusy
                         ? null
                         : () => setup.checkAndInstallDependencies(force: true),
-                    child: const Text('Rebuild Environment'),
+                    child: Text(_strings.get('rebuildEnvironment')),
                   ),
                   const SizedBox(width: 8),
                   Button(
                     onPressed: _copySettingsJson,
-                    child: const Text('Copy Config'),
+                    child: Text(_strings.get('copyConfig')),
                   ),
                 ],
               ),
@@ -496,15 +533,18 @@ class _SettingsWidgetState extends State<SettingsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Advanced',
-          subtitle: 'Diagnostics, configuration export, and recovery actions.',
+          title: _strings.get('advanced'),
+          subtitle: _strings.get('advancedHint'),
         ),
         const SizedBox(height: 18),
         _SettingCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Configuration preview', style: KetTheme.bodyStyle),
+              Text(
+                _strings.get('configurationPreview'),
+                style: KetTheme.bodyStyle,
+              ),
               const SizedBox(height: 10),
               Container(
                 width: double.infinity,
@@ -534,10 +574,13 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Reset settings', style: KetTheme.bodyStyle),
+                    Text(
+                      _strings.get('resetSettings'),
+                      style: KetTheme.bodyStyle,
+                    ),
                     const SizedBox(height: 6),
                     Text(
-                      'Restore all persisted settings to their default values.',
+                      _strings.get('resetSettingsHint'),
                       style: KetTheme.descriptionStyle,
                     ),
                   ],
@@ -550,7 +593,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
                   _pythonController.text = settings.pythonPath;
                   if (mounted) setState(() {});
                 },
-                child: const Text('Reset Defaults'),
+                child: Text(_strings.get('resetDefaults')),
               ),
             ],
           ),
@@ -560,10 +603,10 @@ class _SettingsWidgetState extends State<SettingsWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Runtime snapshot', style: KetTheme.bodyStyle),
+              Text(_strings.get('runtimeSnapshot'), style: KetTheme.bodyStyle),
               const SizedBox(height: 8),
               Text(
-                'Platform: ${kIsWeb ? 'web' : Platform.operatingSystem}\nInterpreter: ${settings.pythonPath}\nEnvironment ready: ${setup.isSetupComplete}',
+                '${_strings.get('platform')}: ${kIsWeb ? 'web' : Platform.operatingSystem}\n${_strings.get('interpreter')}: ${settings.pythonPath}\n${_strings.get('environmentReady')}: ${setup.isSetupComplete}',
                 style: KetTheme.descriptionStyle,
               ),
             ],
@@ -633,7 +676,7 @@ class _SectionButton extends StatelessWidget {
         builder: (context, states) {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 120),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: selected
                   ? KetTheme.accentSoft
@@ -679,7 +722,7 @@ class _SettingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: KetTheme.panelSurface(elevated: true),
-      child: Padding(padding: const EdgeInsets.all(16), child: child),
+      child: Padding(padding: const EdgeInsets.all(12), child: child),
     );
   }
 }
@@ -776,8 +819,11 @@ class _LabeledRow extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 16),
-        trailing,
+        const SizedBox(width: 12),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 180),
+          child: trailing,
+        ),
       ],
     );
   }

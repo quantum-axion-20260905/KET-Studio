@@ -9,6 +9,8 @@ import '../../core/services/execution_service.dart';
 import '../../core/services/layout_service.dart';
 import '../../core/services/menu_service.dart';
 import '../../core/services/python_setup_service.dart';
+import '../../core/services/settings_service.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../core/theme/ket_theme.dart';
 
 class TopBar extends StatelessWidget {
@@ -28,6 +30,7 @@ class TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.forLanguage(SettingsService().language);
     return Container(
       height: KetTheme.topBarHeight,
       decoration: BoxDecoration(
@@ -47,6 +50,7 @@ class TopBar extends StatelessWidget {
                   CommandService(),
                   EditorService(),
                   ExecutionService().isRunning,
+                  SettingsService(),
                 ]),
                 builder: (context, _) {
                   return Wrap(
@@ -148,7 +152,7 @@ class TopBar extends StatelessWidget {
                     if (running)
                       _ActionPill(
                         icon: FluentIcons.stop,
-                        label: "Stop",
+                        label: strings.get('stop'),
                         fill: KetTheme.danger.withValues(alpha: 0.14),
                         iconColor: KetTheme.danger,
                         onPressed: () => ExecutionService().stop(),
@@ -158,7 +162,9 @@ class TopBar extends StatelessWidget {
                       icon: running
                           ? FluentIcons.progress_ring_dots
                           : FluentIcons.play,
-                      label: running ? "Running" : "Run",
+                      label: running
+                          ? strings.get('running')
+                          : strings.get('run'),
                       fill: running ? KetTheme.accentSoft : KetTheme.accent,
                       iconColor: Colors.white,
                       textColor: Colors.white,
@@ -171,7 +177,8 @@ class TopBar extends StatelessWidget {
             const SizedBox(width: 6),
             _CircleIconButton(
               icon: FluentIcons.settings,
-              tooltip: "Settings (Ctrl+,)",
+              tooltip:
+                  "${AppStrings.forLanguage(SettingsService().language).get('settings')} (Ctrl+,)",
               onPressed: () => CommandService().execute("settings.open"),
             ),
             const SizedBox(width: 6),
@@ -475,12 +482,14 @@ class StatusBar extends StatelessWidget {
         EditorService(),
         ExecutionService().isRunning,
         PythonSetupService(),
+        SettingsService(),
         layout,
       ]),
       builder: (context, _) {
         final editor = EditorService();
         final exec = ExecutionService();
         final setup = PythonSetupService();
+        final strings = AppStrings.forLanguage(SettingsService().language);
         final activeFile = editor.activeFile;
 
         return Container(
@@ -501,14 +510,14 @@ class StatusBar extends StatelessWidget {
                 if (layout.supportsBottomPanel)
                   _StatusChip(
                     icon: FluentIcons.command_prompt,
-                    label: "Terminal",
+                    label: strings.get('terminal'),
                     onTap: () => layout.toggleBottomPanel(),
                   ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     activeFile == null
-                        ? "Quantum workspace ready"
+                        ? strings.get('workspaceReady')
                         : (activeFile.path.startsWith('/fake')
                               ? activeFile.name
                               : activeFile.path),
@@ -520,7 +529,9 @@ class StatusBar extends StatelessWidget {
                   icon: setup.isSetupComplete
                       ? FluentIcons.completed
                       : FluentIcons.sync_status,
-                  label: setup.isSetupComplete ? "Env ready" : "Env loading",
+                  label: setup.isSetupComplete
+                      ? strings.get('envReady')
+                      : strings.get('envLoading'),
                 ),
                 const SizedBox(width: 8),
                 if (setup.isSetupComplete)
@@ -543,14 +554,16 @@ class StatusBar extends StatelessWidget {
                       icon: running
                           ? FluentIcons.progress_ring_dots
                           : FluentIcons.play_resume,
-                      label: running ? "Python running" : "Engine idle",
+                      label: running
+                          ? strings.get('pythonRunning')
+                          : strings.get('engineIdle'),
                       highlight: running,
                     );
                   },
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  "v1.1.0",
+                  "v1.2.0",
                   style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
                 ),
               ],

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../localization/app_localizations.dart';
+
 class SettingsService extends ChangeNotifier {
   static final SettingsService _instance = SettingsService._internal();
   factory SettingsService() => _instance;
@@ -22,6 +24,7 @@ class SettingsService extends ChangeNotifier {
   static const _keyShowExecutionDetails = 'showExecutionDetails';
   static const _keyCompactMode = 'compactMode';
   static const _keyStartMaximized = 'startMaximized';
+  static const _keyLanguage = 'language';
 
   ThemeMode _themeMode = ThemeMode.dark;
   ThemeMode get themeMode => _themeMode;
@@ -65,6 +68,9 @@ class SettingsService extends ChangeNotifier {
   bool _startMaximized = true;
   bool get startMaximized => _startMaximized;
 
+  AppLanguage _language = AppLanguage.english;
+  AppLanguage get language => _language;
+
   final List<Color> availableAccents = const [
     Color(0xFF39C6AA),
     Color(0xFF43A5FF),
@@ -99,6 +105,10 @@ class SettingsService extends ChangeNotifier {
     _showExecutionDetails = prefs.getBool(_keyShowExecutionDetails) ?? true;
     _compactMode = prefs.getBool(_keyCompactMode) ?? true;
     _startMaximized = prefs.getBool(_keyStartMaximized) ?? true;
+    final language = prefs.getString(_keyLanguage);
+    _language = language == AppLanguage.uzbek.name
+        ? AppLanguage.uzbek
+        : AppLanguage.english;
 
     notifyListeners();
   }
@@ -119,6 +129,7 @@ class SettingsService extends ChangeNotifier {
       'showExecutionDetails': _showExecutionDetails,
       'compactMode': _compactMode,
       'startMaximized': _startMaximized,
+      'language': _language.name,
     };
   }
 
@@ -142,6 +153,7 @@ class SettingsService extends ChangeNotifier {
     _showExecutionDetails = true;
     _compactMode = true;
     _startMaximized = true;
+    _language = AppLanguage.english;
     notifyListeners();
     await _persistAll();
   }
@@ -244,6 +256,13 @@ class SettingsService extends ChangeNotifier {
     await prefs.setBool(_keyStartMaximized, value);
   }
 
+  void setLanguage(AppLanguage value) async {
+    _language = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLanguage, value.name);
+  }
+
   Future<void> _persistAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyThemeMode, _themeMode.name);
@@ -260,5 +279,6 @@ class SettingsService extends ChangeNotifier {
     await prefs.setBool(_keyShowExecutionDetails, _showExecutionDetails);
     await prefs.setBool(_keyCompactMode, _compactMode);
     await prefs.setBool(_keyStartMaximized, _startMaximized);
+    await prefs.setString(_keyLanguage, _language.name);
   }
 }

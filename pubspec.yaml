@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.0+2
+version: 1.2.0+3
 
 environment:
   sdk: ^3.10.1
@@ -66,7 +66,7 @@ dev_dependencies:
 msix_config:
   display_name: KET Studio
   publisher_display_name: AxionSoftware
-  msix_version: 1.1.0.0
+  msix_version: 1.2.0.0
   logo_path: assets/quantum.jpg
 
 flutter_launcher_icons:

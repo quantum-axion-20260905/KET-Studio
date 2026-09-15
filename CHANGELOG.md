@@ -4,6 +4,18 @@ All notable changes to KET Studio are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## 1.2.0 - 2026-09-15
+
+- Added English/O‘zbekcha localization for the tutorial surface, Settings,
+  primary execution status labels and desktop actions.
+- Added localized tutorial content and a runnable VQE lesson with Run template
+  actions connected to real Python execution and visualization output.
+- Added tutorial authoring documentation with template ids, research-quality
+  disclaimers and reproducibility rules.
+- Refined Settings into a tighter desktop configuration surface with a
+  persisted language selector and localized environment controls.
 - Refined the desktop shell with a denser spacing rhythm, compact bars and
   panel headers, tighter editor tabs, and a more focused welcome surface.
 - Added draggable left and right panel splitters with bounded desktop widths.

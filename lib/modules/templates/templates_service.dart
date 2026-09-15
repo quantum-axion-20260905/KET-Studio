@@ -1,10 +1,15 @@
 import 'package:fluent_ui/fluent_ui.dart';
+
+import '../../core/localization/app_localizations.dart';
 import '../../core/services/editor_service.dart';
+import '../../core/services/execution_service.dart';
 
 class QuantumTemplate {
   final String id;
   final String title;
   final String description;
+  final String? titleUz;
+  final String? descriptionUz;
   final IconData icon;
   final String content;
 
@@ -12,9 +17,18 @@ class QuantumTemplate {
     required this.id,
     required this.title,
     required this.description,
+    this.titleUz,
+    this.descriptionUz,
     required this.icon,
     required this.content,
   });
+
+  String titleFor(AppLanguage language) =>
+      language == AppLanguage.uzbek ? (titleUz ?? title) : title;
+
+  String descriptionFor(AppLanguage language) => language == AppLanguage.uzbek
+      ? (descriptionUz ?? description)
+      : description;
 }
 
 class TemplateService {
@@ -24,6 +38,9 @@ class TemplateService {
       title: 'Bell State (Dynamic)',
       description:
           'Standard entanglement with dynamic metrics and inspector steps.',
+      titleUz: 'Bell holati (jonli)',
+      descriptionUz:
+          'Jonli metrics va inspector qadamlariga ega standart chirmashuv.',
       icon: FluentIcons.reading_mode,
       content: '''# === KET Studio Standard: Entanglement ===
 import ket_viz, math, time
@@ -58,6 +75,8 @@ ket_viz.histogram({"00": 510, "11": 514}, title="Bell State Measurement")
       id: 'grover_professional',
       title: "Grover's Search (Pro)",
       description: 'Professional search algorithm with adaptive metrics.',
+      titleUz: 'Grover qidiruvi (Pro)',
+      descriptionUz: 'Moslashuvchan metrics’li professional qidiruv algoritmi.',
       icon: FluentIcons.search_and_apps,
       content: '''# === KET Studio Standard: Grover's Search ===
 import ket_viz, math, time
@@ -104,6 +123,9 @@ run_grover("101", 3)
       id: 'vqe_realtime',
       title: "VQE Real-time Optimizer",
       description: 'Dynamic VQE simulation with energy tracking.',
+      titleUz: 'VQE: jonli energiya optimizatori',
+      descriptionUz:
+          'Energiya yaqinlashuvini jonli kuzatuvchi VQE simulyatsiyasi.',
       icon: FluentIcons.test_beaker,
       content: '''# === KET Studio Standard: VQE Optimization ===
 import ket_viz, math, random, time
@@ -149,6 +171,8 @@ simulate_vqe()
       id: 'qaoa_surface_pro',
       title: "QAOA Optimization Surface",
       description: 'Professional Max-Cut QAOA with landscape visualization.',
+      titleUz: 'QAOA optimallashtirish yuzasi',
+      descriptionUz: 'Landshaft vizualizatsiyali professional Max-Cut QAOA.',
       icon: FluentIcons.iot,
       content: '''# === KET Studio Standard: QAOA Surface ===
 import ket_viz, math
@@ -191,6 +215,9 @@ ket_viz.estimator({
       id: 'quantum_volume_benchmark',
       title: "Quantum Volume Benchmark",
       description: 'Benchmark system stability and gate fidelity.',
+      titleUz: 'Quantum Volume benchmarki',
+      descriptionUz:
+          'Tizim barqarorligi va darvoza fidelity’sini benchmark qiling.',
       icon: FluentIcons.test_beaker,
       content: '''# === KET Studio Professional Benchmark ===
 import ket_viz, time, random
@@ -230,7 +257,22 @@ run_benchmark(5)
     ),
   ];
 
+  static QuantumTemplate? findById(String id) {
+    for (final template in templates) {
+      if (template.id == id) return template;
+    }
+    return null;
+  }
+
   static void useTemplate(QuantumTemplate template) {
     EditorService().openFile("${template.id}.py", template.content);
+  }
+
+  static Future<void> runTemplate(QuantumTemplate template) async {
+    useTemplate(template);
+    await ExecutionService().runPython(
+      '/fake/${template.id}.py',
+      content: template.content,
+    );
   }
 }

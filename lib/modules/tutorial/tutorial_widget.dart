@@ -1,7 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../core/theme/ket_theme.dart';
 import '../../core/services/editor_service.dart';
+import '../../core/services/settings_service.dart';
+import '../templates/templates_service.dart';
 import 'tutorial_model.dart';
 
 class TutorialWidget extends StatefulWidget {
@@ -16,31 +19,39 @@ class _TutorialWidgetState extends State<TutorialWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 350),
-      transitionBuilder: (child, animation) {
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.05, 0),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-          ),
+    return ListenableBuilder(
+      listenable: SettingsService(),
+      builder: (context, _) {
+        final language = SettingsService().language;
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.05, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: _selectedTutorial != null
+              ? _TutorialDetailView(
+                  key: ValueKey('${_selectedTutorial!.id}-${language.name}'),
+                  tutorial: _selectedTutorial!,
+                  language: language,
+                  onBack: () => setState(() => _selectedTutorial = null),
+                )
+              : _buildGridView(language),
         );
       },
-      child: _selectedTutorial != null
-          ? _TutorialDetailView(
-              key: ValueKey(_selectedTutorial!.id),
-              tutorial: _selectedTutorial!,
-              onBack: () => setState(() => _selectedTutorial = null),
-            )
-          : _buildGridView(),
     );
   }
 
-  Widget _buildGridView() {
+  Widget _buildGridView(AppLanguage language) {
+    final strings = AppStrings.forLanguage(language);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -50,7 +61,7 @@ class _TutorialWidgetState extends State<TutorialWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "LEARNING LAB",
+                strings.get('learningLab'),
                 style: KetTheme.headerStyle.copyWith(
                   color: KetTheme.accent,
                   letterSpacing: 1.5,
@@ -59,11 +70,16 @@ class _TutorialWidgetState extends State<TutorialWidget> {
               ),
               const SizedBox(height: 4),
               Text(
-                "Master Quantum Computation",
+                strings.get('masterQuantum'),
                 style: KetTheme.headerStyle.copyWith(
                   fontSize: 22,
                   color: KetTheme.textMain,
                 ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                strings.get('learningSubtitle'),
+                style: KetTheme.descriptionStyle,
               ),
             ],
           ),
@@ -82,6 +98,7 @@ class _TutorialWidgetState extends State<TutorialWidget> {
               final tutorial = quantumTutorials[index];
               return _TutorialCard(
                 tutorial: tutorial,
+                language: language,
                 onTap: () => setState(() => _selectedTutorial = tutorial),
               );
             },
@@ -94,13 +111,19 @@ class _TutorialWidgetState extends State<TutorialWidget> {
 
 class _TutorialCard extends StatelessWidget {
   final Tutorial tutorial;
+  final AppLanguage language;
   final VoidCallback onTap;
 
-  const _TutorialCard({required this.tutorial, required this.onTap});
+  const _TutorialCard({
+    required this.tutorial,
+    required this.language,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final diffColor = _getDifficultyColor(tutorial.difficulty);
+    final strings = AppStrings.forLanguage(language);
 
     return HoverButton(
       onPressed: onTap,
@@ -140,7 +163,9 @@ class _TutorialCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      tutorial.difficulty.name.toUpperCase(),
+                      strings
+                          .difficulty(tutorial.difficulty.name)
+                          .toUpperCase(),
                       style: TextStyle(
                         color: diffColor,
                         fontSize: 9,
@@ -152,7 +177,7 @@ class _TutorialCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                tutorial.title,
+                tutorial.title.resolve(language),
                 style: KetTheme.bodyStyle.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
@@ -166,7 +191,7 @@ class _TutorialCard extends StatelessWidget {
                   Icon(FluentIcons.clock, size: 12, color: KetTheme.textMuted),
                   const SizedBox(width: 4),
                   Text(
-                    tutorial.duration,
+                    strings.duration(tutorial.duration),
                     style: KetTheme.descriptionStyle.copyWith(fontSize: 11),
                   ),
                   const Spacer(),
@@ -175,6 +200,10 @@ class _TutorialCard extends StatelessWidget {
                     size: 12,
                     color: KetTheme.textMuted,
                   ),
+                  if (tutorial.hasRunnableExperiment) ...[
+                    const SizedBox(width: 6),
+                    Icon(FluentIcons.play, size: 11, color: KetTheme.success),
+                  ],
                 ],
               ),
             ],
@@ -198,16 +227,19 @@ class _TutorialCard extends StatelessWidget {
 
 class _TutorialDetailView extends StatelessWidget {
   final Tutorial tutorial;
+  final AppLanguage language;
   final VoidCallback onBack;
 
   const _TutorialDetailView({
     super.key,
     required this.tutorial,
+    required this.language,
     required this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.forLanguage(language);
     return Column(
       children: [
         // Premium App Bar
@@ -222,20 +254,26 @@ class _TutorialDetailView extends StatelessWidget {
           ),
           child: Row(
             children: [
-              IconButton(icon: const Icon(FluentIcons.back), onPressed: onBack),
+              Tooltip(
+                message: strings.get('back'),
+                child: IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: onBack,
+                ),
+              ),
               const SizedBox(width: 12),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    tutorial.title,
+                    tutorial.title.resolve(language),
                     style: KetTheme.bodyStyle.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    "${tutorial.difficulty.name.toUpperCase()} • ${tutorial.duration}",
+                    "${strings.difficulty(tutorial.difficulty.name).toUpperCase()} • ${strings.duration(tutorial.duration)}",
                     style: KetTheme.descriptionStyle.copyWith(
                       fontSize: 10,
                       letterSpacing: 0.5,
@@ -266,7 +304,7 @@ class _TutorialDetailView extends StatelessWidget {
                     ),
                   );
                 },
-                child: _SectionWidget(section: section),
+                child: _SectionWidget(section: section, language: language),
               );
             },
           ),
@@ -278,16 +316,18 @@ class _TutorialDetailView extends StatelessWidget {
 
 class _SectionWidget extends StatelessWidget {
   final TutorialSection section;
+  final AppLanguage language;
 
-  const _SectionWidget({required this.section});
+  const _SectionWidget({required this.section, required this.language});
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.forLanguage(language);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          section.title,
+          section.title.resolve(language),
           style: KetTheme.headerStyle.copyWith(
             color: KetTheme.accent,
             fontSize: 20,
@@ -295,7 +335,7 @@ class _SectionWidget extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          section.subtitle,
+          section.subtitle.resolve(language),
           style: KetTheme.bodyStyle.copyWith(
             color: KetTheme.textSecondary,
             fontWeight: FontWeight.w600,
@@ -303,15 +343,26 @@ class _SectionWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildRichContent(section.content),
+        _buildRichContent(section.content.resolve(language)),
         if (section.codeSnippet != null) ...[
           const SizedBox(height: 20),
           _CodeBlock(
             code: section.codeSnippet!,
+            language: language,
+            templateId: section.templateId,
             filename:
-                "lab_${section.title.toLowerCase().replaceAll(' ', '_')}.py",
+                "lab_${section.title.resolve(language).toLowerCase().replaceAll(' ', '_')}.py",
           ),
         ],
+        if (section.templateId != null &&
+            TemplateService.findById(section.templateId!) == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              strings.get('templateUnavailable'),
+              style: KetTheme.descriptionStyle,
+            ),
+          ),
         const SizedBox(height: 40),
         const Divider(),
         const SizedBox(height: 40),
@@ -365,11 +416,25 @@ class _SectionWidget extends StatelessWidget {
 class _CodeBlock extends StatelessWidget {
   final String code;
   final String filename;
+  final AppLanguage language;
+  final String? templateId;
 
-  const _CodeBlock({required this.code, required this.filename});
+  const _CodeBlock({
+    required this.code,
+    required this.filename,
+    required this.language,
+    this.templateId,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.forLanguage(language);
+    final template = templateId == null
+        ? null
+        : TemplateService.findById(templateId!);
+
+    void openCode() => EditorService().openFile(filename, code);
+
     return Container(
       decoration: BoxDecoration(
         color: KetTheme.bgActivityBar,
@@ -398,18 +463,20 @@ class _CodeBlock extends StatelessWidget {
                 ),
                 const Spacer(),
                 Tooltip(
-                  message: "Open in Editor",
-                  child: HoverButton(
-                    onPressed: () => EditorService().openFile(filename, code),
-                    builder: (context, states) => Icon(
-                      FluentIcons.open_file,
-                      size: 14,
-                      color: states.isHovered
-                          ? KetTheme.accent
-                          : KetTheme.textMuted,
-                    ),
+                  message: strings.get('openInEditor'),
+                  child: IconButton(
+                    icon: const Icon(FluentIcons.open_file, size: 14),
+                    onPressed: openCode,
                   ),
                 ),
+                if (template != null)
+                  Tooltip(
+                    message: strings.get('runTemplate'),
+                    child: IconButton(
+                      icon: const Icon(FluentIcons.play, size: 14),
+                      onPressed: () => TemplateService.runTemplate(template),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -425,6 +492,37 @@ class _CodeBlock extends StatelessWidget {
               ),
             ),
           ),
+          if (template != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              child: Row(
+                children: [
+                  Button(
+                    onPressed: openCode,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(FluentIcons.open_file, size: 13),
+                        const SizedBox(width: 6),
+                        Text(strings.get('tryTemplate')),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: () => TemplateService.runTemplate(template),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(FluentIcons.play, size: 13),
+                        const SizedBox(width: 6),
+                        Text(strings.get('runTemplate')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

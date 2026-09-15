@@ -2,8 +2,10 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../config/demo_content.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../core/services/command_service.dart';
 import '../../core/services/editor_service.dart';
+import '../../core/services/settings_service.dart';
 import '../../core/theme/ket_theme.dart';
 import '../templates/templates_service.dart';
 
@@ -12,32 +14,38 @@ class WelcomeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: KetTheme.bgCanvas,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1120),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildOverview(),
-                const SizedBox(height: 12),
-                _buildQuickActions(),
-                const SizedBox(height: 12),
-                _buildTemplates(),
-                const SizedBox(height: 12),
-                _buildFooter(),
-              ],
+    return ListenableBuilder(
+      listenable: SettingsService(),
+      builder: (context, _) {
+        final strings = AppStrings.forLanguage(SettingsService().language);
+        return Container(
+          color: KetTheme.bgCanvas,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1120),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildOverview(strings),
+                    const SizedBox(height: 12),
+                    _buildQuickActions(strings),
+                    const SizedBox(height: 12),
+                    _buildTemplates(strings),
+                    const SizedBox(height: 12),
+                    _buildFooter(strings),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildOverview() {
+  Widget _buildOverview(AppStrings strings) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: KetTheme.panelSurface(elevated: true),
@@ -45,7 +53,7 @@ class WelcomeWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "KET STUDIO / CONTROL CENTER",
+            strings.get('controlCenter'),
             style: KetTheme.headerStyle.copyWith(color: KetTheme.accent),
           ),
           const SizedBox(height: 8),
@@ -67,7 +75,7 @@ class WelcomeWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Quantum analysis workspace",
+                      strings.get('workspaceTitle'),
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -76,7 +84,7 @@ class WelcomeWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      DemoContent.welcomeSubtitle,
+                      strings.get('workspaceSubtitle'),
                       style: KetTheme.bodyStyle.copyWith(
                         color: KetTheme.textSecondary,
                         height: 1.45,
@@ -91,18 +99,18 @@ class WelcomeWidget extends StatelessWidget {
           Wrap(
             spacing: 12,
             runSpacing: 12,
-            children: const [
+            children: [
               _OverviewChip(
-                title: "Scripts",
-                value: "Python and quantum workflows",
+                title: strings.get('scripts'),
+                value: strings.get('scriptsHint'),
               ),
               _OverviewChip(
-                title: "Panels",
-                value: "Inspector, metrics and history",
+                title: strings.get('panels'),
+                value: strings.get('panelsHint'),
               ),
               _OverviewChip(
-                title: "Execution",
-                value: "Run locally and inspect output",
+                title: strings.get('execution'),
+                value: strings.get('executionHint'),
               ),
             ],
           ),
@@ -111,7 +119,7 @@ class WelcomeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(AppStrings strings) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -123,7 +131,7 @@ class WelcomeWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("ACTIONS", style: KetTheme.headerStyle),
+                Text(strings.get('actions'), style: KetTheme.headerStyle),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
@@ -131,21 +139,21 @@ class WelcomeWidget extends StatelessWidget {
                   children: [
                     _ActionCard(
                       icon: FluentIcons.page_add,
-                      title: "New file",
-                      subtitle: "Start a fresh experiment or utility script.",
+                      title: strings.get('newFile'),
+                      subtitle: strings.get('newFileHint'),
                       emphasis: true,
                       onTap: () => EditorService().openFile("untitled.py", ""),
                     ),
                     _ActionCard(
                       icon: FluentIcons.fabric_open_folder_horizontal,
-                      title: "Open folder",
-                      subtitle: "Load an existing workspace from disk.",
+                      title: strings.get('openFolder'),
+                      subtitle: strings.get('openFolderHint'),
                       onTap: () => CommandService().execute("file.openFolder"),
                     ),
                     _ActionCard(
                       icon: FluentIcons.test_beaker,
-                      title: "Try demo",
-                      subtitle: "Open a prepared visualization sample.",
+                      title: strings.get('tryDemo'),
+                      subtitle: strings.get('tryDemoHint'),
                       onTap: () => EditorService().openFile(
                         "demo_visualizer.py",
                         DemoContent.demoScript,
@@ -166,27 +174,24 @@ class WelcomeWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("WORKSPACE", style: KetTheme.headerStyle),
+                Text(strings.get('workspace'), style: KetTheme.headerStyle),
                 const SizedBox(height: 10),
-                const _InfoRow(
+                _InfoRow(
                   icon: FluentIcons.bulleted_list,
-                  title: "Project state",
-                  description:
-                      "Recent items hali yo'q. Birinchi workspace yarating.",
+                  title: strings.get('projectState'),
+                  description: strings.get('projectStateHint'),
                 ),
                 const SizedBox(height: 10),
-                const _InfoRow(
+                _InfoRow(
                   icon: FluentIcons.processing,
-                  title: "Visualization",
-                  description:
-                      "Run qiling va natijalarni inspector, charts va history panelda ko'ring.",
+                  title: strings.get('visualization'),
+                  description: strings.get('visualizationHint'),
                 ),
                 const SizedBox(height: 10),
-                const _InfoRow(
+                _InfoRow(
                   icon: FluentIcons.settings,
-                  title: "Environment",
-                  description:
-                      "Python path va package management ichkaridan boshqariladi.",
+                  title: strings.get('environment'),
+                  description: strings.get('environmentHintWelcome'),
                 ),
               ],
             ),
@@ -196,17 +201,17 @@ class WelcomeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTemplates() {
+  Widget _buildTemplates(AppStrings strings) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: KetTheme.panelSurface(elevated: true),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("QUANTUM TEMPLATES", style: KetTheme.headerStyle),
+          Text(strings.get('quantumTemplates'), style: KetTheme.headerStyle),
           const SizedBox(height: 6),
           Text(
-            "Start from curated examples instead of an empty editor.",
+            strings.get('quantumTemplatesHint'),
             style: KetTheme.descriptionStyle,
           ),
           const SizedBox(height: 12),
@@ -214,7 +219,7 @@ class WelcomeWidget extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: TemplateService.templates.map((tpl) {
-              return _TemplateCard(tpl: tpl);
+              return _TemplateCard(tpl: tpl, language: strings.language);
             }).toList(),
           ),
         ],
@@ -222,14 +227,17 @@ class WelcomeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter() {
+  Widget _buildFooter(AppStrings strings) {
     return Row(
       children: [
-        Text("Learning Resources", style: KetTheme.descriptionStyle),
+        Text(
+          strings.get('learningResources'),
+          style: KetTheme.descriptionStyle,
+        ),
         const SizedBox(width: 22),
-        Text("Quantum Hardware", style: KetTheme.descriptionStyle),
+        Text(strings.get('quantumHardware'), style: KetTheme.descriptionStyle),
         const Spacer(),
-        Text("v1.1.0", style: KetTheme.descriptionStyle.copyWith(fontSize: 11)),
+        Text("v1.2.0", style: KetTheme.descriptionStyle.copyWith(fontSize: 11)),
       ],
     );
   }
@@ -388,8 +396,9 @@ class _InfoRow extends StatelessWidget {
 
 class _TemplateCard extends StatelessWidget {
   final QuantumTemplate tpl;
+  final AppLanguage language;
 
-  const _TemplateCard({required this.tpl});
+  const _TemplateCard({required this.tpl, required this.language});
 
   @override
   Widget build(BuildContext context) {
@@ -424,7 +433,7 @@ class _TemplateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  tpl.title,
+                  tpl.titleFor(language),
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -433,7 +442,7 @@ class _TemplateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  tpl.description,
+                  tpl.descriptionFor(language),
                   style: KetTheme.descriptionStyle,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
