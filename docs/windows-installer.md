@@ -50,11 +50,31 @@ flutter analyze
 flutter test
 flutter build windows --release
 Copy-Item .\native\ket_host\build\Release\ket_host.exe .\build\windows\x64\runner\Release\ket_host.exe -Force
+pwsh -File .\scripts\prepare_windows_runtime.ps1
 ```
 
 The native host is copied beside the Flutter executable by the installer
 script. Do not distribute only the Flutter executable: the real terminal needs
-`ket_host.exe` at runtime.
+`ket_host.exe` at runtime. `prepare_windows_runtime.ps1` also copies the
+Microsoft Visual C++ runtime DLLs beside the app, so a clean Windows machine
+does not need a separate VC++ installation just to launch KET Studio.
+
+## Clean-machine runtime dependency
+
+Flutter and the native terminal host use the Microsoft Visual C++ runtime. The
+release scripts bundle the required x64 files app-local:
+
+```text
+msvcp140.dll
+msvcp140_atomic_wait.dll
+vcruntime140.dll
+vcruntime140_1.dll
+```
+
+If the preparation script reports a missing file, install the official
+Microsoft Visual C++ 2015–2022 Redistributable (x64) and run it again. The
+runtime DLLs must come from the official Microsoft installation; do not copy
+debug DLLs or files from an unrelated architecture.
 
 ## Build the MSIX package
 
@@ -102,12 +122,43 @@ self-signed package as universally trusted.
 pwsh -File .\scripts\build_windows_installer.ps1
 ```
 
-The script builds the release application, includes `ket_host.exe`, and uses
-Inno Setup to create a per-user installer under:
+The script builds the release application, includes `ket_host.exe`, bundles the
+VC++ runtime and uses Inno Setup to create a per-user installer under:
 
 ```text
 dist\windows-installer\
 ```
+
+## Code signing and SmartScreen
+
+An installer can be technically valid and still trigger Windows SmartScreen if
+it is unsigned or signed with a private/self-signed certificate. The current
+development artifact is in that category. No script can make an unsigned file
+universally trusted on every Windows machine.
+
+For a public release, obtain an organization-verified code-signing certificate
+from a trusted certificate authority, keep its PFX/private key outside Git,
+then sign the app binaries, native host, installer and MSIX with an RFC 3161
+timestamp:
+
+```powershell
+pwsh -File .\scripts\sign_windows_release.ps1 `
+  -CertificatePath .\release-signing.pfx
+```
+
+For a local interactive run, the signing script prompts for the PFX password.
+In CI, provide `KET_SIGN_CERT_PASSWORD` from the platform secret store instead
+of committing a certificate or password. Verify the result:
+
+```powershell
+Get-AuthenticodeSignature .\dist\windows-installer\ket-studio-setup-1.3.1.exe
+Get-AuthenticodeSignature .\dist\windows-installer\ket-studio-windows-x64.msix
+```
+
+Signing reduces warnings and proves publisher integrity, but SmartScreen
+reputation can still take time for a new publisher or a new binary. Keep the
+EXE and MSIX hashes in the release notes and do not call a self-signed build a
+universally trusted release.
 
 ## Release verification checklist
 

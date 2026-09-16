@@ -37,8 +37,12 @@ ishlating yoki EXE fallback’ni tanlang.
 ### EXE fallback
 
 `ket-studio-windows-x64-setup.exe` per-user installer bo‘lib, administrator
-huquqisiz o‘rnatish uchun mo‘ljallangan. MSIX trust ishlamasa yoki reviewerga
-oddiy setup flow kerak bo‘lsa shu paketdan foydalanish mumkin.
+huquqisiz o‘rnatish uchun mo‘ljallangan. Paket ichida KET Studio va native
+terminal uchun kerakli Microsoft Visual C++ x64 runtime DLL’lari ham bor.
+MSIX trust ishlamasa yoki reviewerga oddiy setup flow kerak bo‘lsa shu paketdan
+foydalanish mumkin. Installer imzolanmagan bo‘lsa, Windows SmartScreen baribir
+ogohlantirishi mumkin; bu holatni faqat trusted code-signing certificate bilan
+hal qilish mumkin.
 
 ### O‘rnatilgandan keyingi tekshiruv
 

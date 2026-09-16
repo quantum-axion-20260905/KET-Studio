@@ -9,6 +9,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $releaseDir = Join-Path $repoRoot "build\windows\x64\runner\Release"
 $nativeHostPath = Join-Path $repoRoot "native\ket_host\build\Release\ket_host.exe"
 $nativeBuildScript = Join-Path $repoRoot "scripts\build_native_host.ps1"
+$runtimeScript = Join-Path $repoRoot "scripts\prepare_windows_runtime.ps1"
 $scriptPath = Join-Path $repoRoot "installer\ket_studio.iss"
 $distDir = Join-Path $repoRoot "dist\windows-installer"
 
@@ -89,6 +90,8 @@ if (-not (Test-Path (Join-Path $releaseDir "ket_studio.exe"))) {
 }
 
 Copy-Item -LiteralPath $nativeHostPath -Destination (Join-Path $releaseDir "ket_host.exe") -Force
+
+& $runtimeScript -ReleaseDir $releaseDir
 
 if (-not (Test-Path $distDir)) {
     New-Item -ItemType Directory -Path $distDir | Out-Null

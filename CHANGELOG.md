@@ -6,6 +6,15 @@ All notable changes to KET Studio are documented here.
 
 No changes yet.
 
+## 1.3.1 - 2026-09-16
+
+- Bundled the required Microsoft Visual C++ x64 runtime DLLs app-local in
+  Windows release packages for clean-machine startup.
+- Added a reproducible `signtool` workflow for signing app binaries, the EXE
+  installer and the MSIX package with a trusted release certificate.
+- Expanded the practical installation and release documentation around
+  SmartScreen, dependencies and trusted distribution.
+
 ## 1.3.0 - 2026-09-15
 
 - Added a transparent KET Studio PNG brand mark and regenerated the Windows
