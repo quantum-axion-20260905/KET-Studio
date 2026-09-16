@@ -159,6 +159,22 @@ Metrics — jonli holat, Estimator — ish boshlanishidan oldingi resurs bahosi.
 Ularni har bir ichki loop iteratsiyasida yuborish shart emas; foydalanuvchiga
 qaror qabul qilish uchun kerak bo‘lgan qadamlarni yuboring.
 
+### Text va xatolar
+
+Odam o‘qiydigan qisqa status yoki izoh uchun:
+
+```python
+import ket_viz
+
+ket_viz.text("Simulation started")
+ket_viz.text("Checkpoint 1 completed")
+```
+
+Haqiqiy exception’ni yashirmang: uni oddiy Python xatosi sifatida qoldiring.
+Shunda Terminal’da traceback, session’da esa error status ko‘rinadi. Custom
+adapter raw protocol ishlatsa, `text` va `error` event schema’dagi shakldan
+foydalanishi mumkin.
+
 ## Quantum circuit va matplotlib
 
 KET Studio hozircha `QuantumCircuit` obyektini ichkaridan tahlil qilmaydi.
