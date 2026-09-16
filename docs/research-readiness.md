@@ -1,8 +1,8 @@
 # KET Studio research readiness
 
-Ushbu hujjat KET Studio’ni grant, ilmiy prototip va keyingi publication-grade
-workflow uchun baholaydi. U ikki narsani ajratadi: bugun ishlaydigan imkoniyatlar
-va grant bosqichida qo‘shilishi kerak bo‘lgan research infrastructure.
+Ushbu hujjat KET Studio’ni ilmiy prototip va keyingi publication-grade workflow
+uchun baholaydi. U bugun ishlaydigan imkoniyatlarni keyingi research
+infrastructure’dan aniq ajratadi.
 
 ## Qisqa xulosa
 
@@ -56,7 +56,7 @@ etiladi.
 
 ## Hozirgi research workflow
 
-Publication yoki grant tajribasini hozircha quyidagi manual tartibda saqlang:
+Publication yoki review qilinadigan tajribani hozircha quyidagi manual tartibda saqlang:
 
 1. Kodni Git repository’da saqlang va commit hash’ni yozib oling.
 2. Python versiyasini tekshiring: `python --version`.
@@ -101,7 +101,7 @@ optional package’larni PyPI’dan o‘rnatadi. Package install hozircha to‘l
 version-pinned emas; shu sababli aynan bir xil Python environment avtomatik
 kafolatlanmaydi.
 
-Grant bosqichida quyidagilar qo‘shilishi kerak:
+Keyingi research bosqichida quyidagilar qo‘shilishi kerak:
 
 - `requirements.in` yoki `pyproject.toml` — inson o‘qiydigan dependency spec;
 - platformaga mos `requirements-lock.txt` — aniq versiyalar va hash’lar;
@@ -129,7 +129,7 @@ release versiyasini saqlashi kerak.
 
 ## Rejalashtirilgan experiment bundle
 
-Grant uchun maqsad — har bir run’ni ko‘chirish va qayta tekshirish mumkin bo‘lgan
+Keyingi development maqsadi — har bir run’ni ko‘chirish va qayta tekshirish mumkin bo‘lgan
 artifact sifatida saqlash:
 
 ```text
@@ -168,7 +168,7 @@ Tavsiya etiladigan `manifest.json` maydonlari:
 }
 ```
 
-Bu format hozir avtomatik yaratilmaydi; u grant roadmap’dagi aniq engineering
+Bu format hozir avtomatik yaratilmaydi; u research roadmap’dagi aniq engineering
 deliverable sifatida ko‘rsatiladi.
 
 ## Backend va real hardware chegaralari
@@ -201,7 +201,7 @@ Research ishonchliligi uchun quyidagi test qatlamlari kerak:
 - Windows native host startup/input/resize/interrupt/exit integration testi;
 - release build’dan keyin portable smoke test.
 
-### P1 — grant-ready
+### P1 — research-ready
 
 - Bell state va Grover kabi deterministic example’lar uchun expected-output test;
 - seeded Aer simulation va raw counts regression test;
@@ -216,9 +216,9 @@ Research ishonchliligi uchun quyidagi test qatlamlari kerak:
 - large-run performance benchmarklari;
 - signed installer, update channel va crash diagnostics siyosati.
 
-## Grantga kiritiladigan deliverable’lar
+## Keyingi bosqich deliverable’lari
 
-Grant scope’ini quyidagi aniq natijalar bilan ifodalash mumkin:
+Keyingi development scope’ini quyidagi aniq natijalar bilan ifodalash mumkin:
 
 1. Reproducible Python environment: pinned packages, verification va export.
 2. Experiment provenance: manifest, seed, parameters, script hash va Git link.
@@ -239,8 +239,7 @@ Grant scope’ini quyidagi aniq natijalar bilan ifodalash mumkin:
 
 ## Halol status
 
-KET Studio hozir grant uchun kuchli, ishlaydigan desktop research-workbench
-prototipi sifatida ko‘rsatilishi mumkin. Grant matnida uni “fully validated
-scientific platform” deb emas, balki reproducibility, provenance, backend
-adapterlari va validation qatlamlari bilan kengaytiriladigan ochiq manbali
-research environment sifatida ta’riflash to‘g‘ri bo‘ladi.
+KET Studio hozir ishlaydigan desktop research-workbench prototipi sifatida
+foydalanilishi mumkin. Uni “fully validated scientific platform” deb emas, balki
+reproducibility, provenance, backend adapterlari va validation qatlamlari bilan
+kengaytiriladigan ochiq manbali research environment sifatida ta’riflash to‘g‘ri.

@@ -174,7 +174,7 @@ Record the KET Studio version, Git commit, script SHA-256, OS, Python and
 library versions, backend configuration, qubits, depth, gate counts, shots,
 optimizer parameters, seeds, raw results and rerun outcome. The complete
 [Research Readiness](docs/research-readiness.md) document separates what works
-now from the grant roadmap.
+now from the research roadmap.
 
 ## Development
 
@@ -222,8 +222,7 @@ native host or release workflow.
 - [Getting Started](docs/getting-started.md) — installation and first run;
 - [Visualization Guide](docs/visualization-guide.md) — KET Studio-specific code;
 - [Event Schema](docs/event_schema.md) — formal JSON-lines protocol;
-- [Research Readiness](docs/research-readiness.md) — current gaps and grant roadmap;
-- [Unitary Grant Draft](docs/grant-application-unitary.md) — project-specific grant narrative and submission checklist;
+- [Research Readiness](docs/research-readiness.md) — current gaps and research roadmap;
 - [Architecture](docs/architecture.md) — system boundaries and data flow;
 - [Windows Distribution](docs/windows-installer.md) — MSIX, EXE, checksums and signing;
 - [Development Guide](docs/development.md) — contribution and release checks;

@@ -93,7 +93,7 @@ my-project/
     └── temp/              # launcher.py va vaqtinchalik runtime fayllari
 ```
 
-`.ket/out` — saqlab qolish va grant/publication materialiga qo‘shish mumkin
+`.ket/out` — saqlab qolish va publication materialiga qo‘shish mumkin
 bo‘lgan output joyi. `.ket/temp` — runtime tomonidan boshqariladi; unga qo‘lda
 natija arxivlashga tayanmang.
 
@@ -329,7 +329,7 @@ Terminal input ishlamasa Settings’dagi shell/interpreter yo‘lini, keyin esa
 native host mavjudligini tekshiring. Browser preview’da real terminal ataylab
 yo‘q.
 
-## 11. Research va grant uchun reproducibility checklist
+## 11. Research reproducibility checklist
 
 Har bir muhim run bilan quyidagilarni birga arxivlang:
 
@@ -342,7 +342,7 @@ Har bir muhim run bilan quyidagilarni birga arxivlang:
 7. Run vaqti, exit code, warning/error va qayta ishga tushirish natijasi.
 
 KET Studio vizualizatsiyani ko‘rsatadi, lekin backend hisobining ilmiy
-to‘g‘riligini mustaqil tasdiqlamaydi. Natijani publication yoki grantga
+to‘g‘riligini mustaqil tasdiqlamaydi. Natijani publication yoki review’ga
 qo‘shishdan oldin mustaqil baseline, deterministic seed va raw data bilan
 tekshiring. Chegaralar va tavsiya etiladigan arxiv tuzilmasi
 [research-readiness.md](research-readiness.md)da.
@@ -360,5 +360,5 @@ tekshiring. Chegaralar va tavsiya etiladigan arxiv tuzilmasi
 
 Muammoni report qilganda yuqoridagi muhit ma’lumotlari, minimal reproducer,
 terminal log’i, event JSON’i va KET Studio version’ini birga yuboring. Shu
-ma’lumotlar grant reviewer yoki contributor uchun muammoni qayta tiklashni
+ma’lumotlar reviewer yoki contributor uchun muammoni qayta tiklashni
 ancha osonlashtiradi.

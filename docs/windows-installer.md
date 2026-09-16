@@ -3,7 +3,7 @@
 KET Studio currently ships one supported desktop target: **Windows 10/11
 x64**. Linux and macOS are roadmap targets; this repository does not publish
 installers for them yet. The release pipeline below is intentionally explicit
-so a grant reviewer can reproduce the build and distinguish a tested artifact
+so a reviewer can reproduce the build and distinguish a tested artifact
 from a future platform plan.
 
 ## Release artifacts
@@ -112,7 +112,7 @@ Get-ChildItem -Path . -Recurse -File -Include *.msix |
 4. Remove the package from **Settings → Apps → Installed apps** when testing
    an upgrade or rollback.
 
-For a public grant demo, either sign the MSIX with a certificate trusted by
+For a public demo, either sign the MSIX with a certificate trusted by
 the target audience or publish the EXE fallback alongside it. Never describe a
 self-signed package as universally trusted.
 

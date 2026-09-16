@@ -42,7 +42,7 @@ No changes yet.
 - Improved status, metrics, history, explorer, terminal and visualization
   panel density for resizable Windows windows.
 - Added research-readiness documentation covering reproducibility, provenance,
-  experiment bundles, backend boundaries, validation and grant deliverables.
+  experiment bundles, backend boundaries, validation and research deliverables.
 
 ## 1.1.0 - 2026-09-14
 
