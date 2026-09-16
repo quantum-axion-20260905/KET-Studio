@@ -223,6 +223,7 @@ native host or release workflow.
 - [Visualization Guide](docs/visualization-guide.md) — KET Studio-specific code;
 - [Event Schema](docs/event_schema.md) — formal JSON-lines protocol;
 - [Research Readiness](docs/research-readiness.md) — current gaps and grant roadmap;
+- [Unitary Grant Draft](docs/grant-application-unitary.md) — project-specific grant narrative and submission checklist;
 - [Architecture](docs/architecture.md) — system boundaries and data flow;
 - [Windows Distribution](docs/windows-installer.md) — MSIX, EXE, checksums and signing;
 - [Development Guide](docs/development.md) — contribution and release checks;
