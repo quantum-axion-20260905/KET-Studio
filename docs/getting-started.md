@@ -68,9 +68,17 @@ Hash mos kelmasa, package’ni ishga tushirmang va qayta yuklab oling.
    Metrics, Inspector, Estimator yoki History panellarida paydo bo‘ladi.
 
 KET Studio ishga tushirish paytida `ket_viz` modulini vaqtincha process ichiga
-qo‘shadi. Shu sababli alohida `pip install ket_viz` talab qilinmaydi. Qiskit,
-Cirq, NumPy yoki Matplotlib kerak bo‘lsa, ularni tanlangan Python muhitiga
-foydalanuvchi o‘zi o‘rnatadi.
+qo‘shadi. Shu sababli alohida `pip install ket_viz` talab qilinmaydi. Birinchi
+desktop setup application support ichida izolyatsiyalangan `ket_venv` yaratadi,
+`qiskit[visualization]`, `qiskit-aer` va `numpy` core paketlarini o‘rnatishga
+urinadi va kichik verification circuit bilan muhitni tekshiradi. Matplotlib
+visualization extra orqali keladi; `pandas`, `scipy`, IBM runtime yoki boshqa
+optional paketlar avtomatik o‘rnatilmaydi — ularni Settings → Environment’dan
+qo‘shing.
+
+Script’ni oddiy terminalda `python experiment.py` qilib ishga tushirsangiz,
+`ket_viz` topilmasligi mumkin, chunki injection faqat KET Studio Run/F5
+launcher’ida ishlaydi. Bunday holatda raw `KET_VIZ` protocol’dan foydalaning.
 
 ## 4. Project tuzilmasi va natijalar
 
